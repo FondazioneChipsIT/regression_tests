@@ -15,7 +15,11 @@ def write_arr(f, name, arr):
 f = open('parMatrixMul32_stimuli.h', 'w')
 
 
+<<<<<<< HEAD
 SIZE = 32
+=======
+SIZE = 24
+>>>>>>> 7825955 (Fixed header file generator and source code.)
 RANGE = 2**15/SIZE
 
 m_a   = []
@@ -47,8 +51,8 @@ write_arr(f, 'm_exp', m_exp)
 f.write('#define SIZE %d\n' % SIZE)
 
 
-f.write('__attribute__ ((section(".heapsram"))) int g_mA[SIZE][SIZE];\n')
-f.write('__attribute__ ((section(".heapsram"))) int g_mB[SIZE][SIZE];\n')
-f.write('__attribute__ ((section(".heapsram"))) int g_mC[SIZE][SIZE];\n')
-f.write('__attribute__ ((section(".heapsram"))) int g_mB_tmp[SIZE][SIZE];\n')
+f.write('__attribute__ ((section("__heap_sram"))) int g_mA[SIZE][SIZE];\n')
+f.write('__attribute__ ((section("__heap_sram"))) int g_mB[SIZE][SIZE];\n')
+f.write('__attribute__ ((section("__heap_sram"))) int g_mC[SIZE][SIZE];\n')
+f.write('__attribute__ ((section("__heap_sram"))) int g_mB_tmp[SIZE][SIZE];\n')
 
