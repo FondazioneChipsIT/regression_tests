@@ -15,11 +15,7 @@ def write_arr(f, name, arr):
 f = open('parMatrixMul32_stimuli.h', 'w')
 
 
-<<<<<<< HEAD
-SIZE = 32
-=======
 SIZE = 24
->>>>>>> 7825955 (Fixed header file generator and source code.)
 RANGE = 2**15/SIZE
 
 m_a   = []

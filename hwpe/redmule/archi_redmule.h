@@ -63,10 +63,10 @@
  */
 
 /* PULP Cluster Archi defines */
-#define ARCHI_CLUST_CTRL_BASE ARCHI_CLUSTER_CTRL_ADDR
-#define ARCHI_CLUST_HWPE_BASE ARCHI_HWCE_ADDR
-#define DMA_COMMAND_QUEUE     ARCHI_MCHAN_DEMUX_ADDR
-#define DMA_STATUS_REGISTER   (ARCHI_MCHAN_DEMUX_ADDR + 4)
+#define ARCHI_CLUST_CTRL_BASE 0x50200000
+#define ARCHI_CLUST_HWPE_BASE 0x50201000
+#define DMA_COMMAND_QUEUE     0x50204400
+#define DMA_STATUS_REGISTER   0x50204404
 #define ARCHI_CL_HWPE_EVT0 12
 #define ARCHI_CL_HWPE_EVT1 13
 #define FC_DMA_EVENT 8
@@ -92,19 +92,32 @@
 #define REDMULE_SOFT_CLEAR  0x14
 
 // Registers
-#define REDMULE_REG_OFFS 0x40
-#define REDMULE_REG_X_PTR 0x00
-#define REDMULE_REG_W_PTR 0x04
-#define REDMULE_REG_Z_PTR 0x08
-#define REDMULE_MCFG0_PTR 0x0C
-#define REDMULE_MCFG1_PTR 0x10
-#define REDMULE_ARITH_PTR 0x14
-
-#define REDMULE_ECC_REG_OFFS           0x90
-#define DATA_CORR_ERR                  0x00
-#define DATA_UNCORR_ERR                0x04
-#define METADATA_CORR_ERR              0x08
-#define METADATA_UNCORR_ERR            0x0c
+#define REDMULE_REG_OFFS  0x40
+// #define REDMULE_REG_X_PTR 0x00
+// #define REDMULE_REG_W_PTR 0x04
+// #define REDMULE_REG_Z_PTR 0x08
+// #define REDMULE_MCFG0_PTR 0x0C
+// #define REDMULE_MCFG1_PTR 0x10
+// #define REDMULE_ARITH_PTR 0x14
+#define REDMULE_REG_X_PTR              0x00
+#define REDMULE_REG_W_PTR              0x04
+#define REDMULE_REG_Y_PTR              0x08
+#define REDMULE_REG_Z_PTR              0x0C
+#define REDMULE_REG_X_ITER_PTR         0x10
+#define REDMULE_REG_W_ITER_PTR         0x14
+#define REDMULE_REG_LEFTOVERS_PTR      0x18
+#define REDMULE_REG_LEFT_PARAMS_PTR    0x1C
+#define REDMULE_REG_X_D1_STRIDE_PTR    0x20
+#define REDMULE_REG_W_TOT_LEN_PTR      0x24
+#define REDMULE_REG_TOT_X_READ_PTR     0x28
+#define REDMULE_REG_W_D0_STRIDE_PTR    0x2C
+#define REDMULE_REG_YZ_TOT_LEN_PTR     0x30
+#define REDMULE_REG_YZ_D0_STRIDE_PTR   0x34
+#define REDMULE_REG_YZ_D2_STRIDE_PTR   0x38
+#define REDMULE_REG_X_ROWS_OFFS_PTR    0x3C
+#define REDMULE_REG_X_BUFFER_SLOTS_PTR 0x40
+#define REDMULE_REG_X_TOT_LEN_PTR      0x44
+#define REDMULE_REG_OP_SELECTION       0x48
 
 // OPs definition
 #define MATMUL 0x0
@@ -124,10 +137,10 @@
 
 #define RNE       0x0
 #define RTZ       0x1
-#define OP_FMADD  0x0
-#define OP_ADD    0x2
-#define OP_MUL    0x3
-#define OP_MINMAX 0x7
+#define OP_FMADD  0x3
+#define OP_ADD    0x5
+#define OP_MUL    0x6
+#define OP_MINMAX 0xA
 
 // FP Formats encoding
 #define FP16    0x2

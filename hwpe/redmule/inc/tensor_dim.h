@@ -2,9 +2,9 @@
 #ifndef __TENSOR_DIM__
 #define __TENSOR_DIM__
 
-#define M_SIZE  48 
-#define N_SIZE  48 
-#define K_SIZE  48
+#define M_SIZE  96 
+#define N_SIZE  96 
+#define K_SIZE  96
 #define SRC_FMT FP16
 #define DST_FMT FP16
 #define FPFORMAT 16
