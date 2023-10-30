@@ -46,8 +46,8 @@ int main() {
                          true , // Rapid recovery enabled
                          true , // Setback enabled
                          false); // Synch req
-  //printf("Available Config: %x\n", hmr_get_available_config(rt_cluster_id()));
-  //printf("after setup: %x\n", hmr_get_active_cores(rt_cluster_id()));
+  printf("Available Config: %x\n", hmr_get_available_config(rt_cluster_id()));
+  printf("after setup: %x\n", hmr_get_active_cores(rt_cluster_id()));
 
   hmr_setup_barrier(hmr_get_active_cores(0));
 
@@ -60,13 +60,13 @@ int main() {
 
 void matrix_multiplication(testresult_t *result, void (*start)(), void (*stop)()) {
   int coreid = rt_core_id();
-  int numcores = 4;
+  int numcores = 6;
   int *CHKSUM_RESULT;
   short int i, iter, j, k;
   int lb, ub, chunk;
 
   if (coreid == 0){
-    //printf("Start ParMatrixMul\n",0,0,0,0);
+    printf("Start ParMatrixMul\n",0,0,0,0);
     // initialize matrix A and B
     initialize_mat();
   }
