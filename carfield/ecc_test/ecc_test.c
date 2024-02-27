@@ -43,27 +43,14 @@ int main() {
   for (int i = 0; i < NUM_BANKS; i++)
     tcdm_scrubber_set_interval(cluster_id, i, SCRUBBER_INTERVAL);
 
-  // Initialize the error-tracking variables
-  bool  mismatch = 0;
+  // Initialize the error vector
   unsigned int error = 0;
   for (int i = 0; i < SIZE; i++) {
-    mismatch = (pulp_read32(&test_array[i]) != i);
-    if (mismatch) {
-      error ++;
+    error += (pulp_read32(&test_array[i]) != i);
+    if (error != 0)
       printf("Expected 0x%x, got 0x%x\n", i, pulp_read32(&test_array[i]));
-    }
   }
 
-  unsigned int mismatch_cnt = 0;
-  unsigned int fix_cnt = 0;
-  unsigned int uncorrectable_cnt = 0;
-  for (int i = 0; i < 16; i++) {
-    mismatch_cnt += tcdm_scrubber_get_mismatch_count(cluster_id, i);
-    fix_cnt += tcdm_scrubber_get_fix_count(cluster_id, i);
-    uncorrectable_cnt += tcdm_scrubber_get_uncorrectable_count(cluster_id, i);
-  }
+  return error;
 
-  printf("mismatch_cnt: %d, fix_cnt: %d, uncorrectable_cnt: %d\n", mismatch_cnt, fix_cnt, uncorrectable_cnt);
-
-  return (error != 0) && (uncorrectable_cnt == 0);
 }
