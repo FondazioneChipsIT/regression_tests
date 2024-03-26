@@ -19,11 +19,10 @@
  */
 
 #include "nnx_layer.h"
-#include "ecc_check.h"
-#include "pulp.h"
+#include <pmsis.h>
 
 #include "neureka.h"
-#include "neureka_pulp_cluster_bsp.h"
+#include "neureka_astral_bsp.h"
 #include "neureka_task.h"
 #include "pulp_nnx_neureka.h"
 
@@ -35,7 +34,7 @@ typedef neureka_quant_function_e nnx_quant_function_e;
 typedef neureka_norm_t nnx_norm_t;
 typedef neureka_task_t nnx_task_t;
 typedef neureka_dev_t nnx_dev_t;
-typedef neureka_pulp_cluster_conf_t nnx_bsp_conf_t;
+typedef neureka_astral_conf_t nnx_bsp_conf_t;
 typedef neureka_task_flag_e nnx_task_flag_e;
 
 #define nnxTaskFlagTrue neurekaTaskFlagTrue
@@ -52,13 +51,12 @@ typedef neureka_task_flag_e nnx_task_flag_e;
 #define nnx_task_set_ptrs_conv neureka_task_set_ptrs_conv
 #define nnx_task_set_ptrs_norm_quant neureka_task_set_ptrs_norm_quant
 
-#define nnx_bsp_get_dev neureka_pulp_cluster_get_dev
+#define nnx_bsp_get_dev neureka_astral_get_dev
 
 #define nnx_init neureka_nnx_init
 #define nnx_dispatch_wait neureka_nnx_dispatch_wait
 #define nnx_dispatch neureka_nnx_dispatch
 #define nnx_resolve_wait neureka_nnx_resolve_wait
-#define nnx_read_ecc_regs neureka_nnx_read_ecc_regs
 #define nnx_term neureka_nnx_term
 
 // Generated headers
@@ -161,9 +159,6 @@ static void task_execute(nnx_task_t *task) {
 #endif
 
   nnx_resolve_wait(dev, task);
-#ifndef NO_ECC
-  nnx_read_ecc_regs(dev, (uint32_t)ecc_errs);
-#endif
 
   nnx_term(dev);
 
