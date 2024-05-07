@@ -19,7 +19,6 @@
  */
 
 #include <stdint.h>
-#include <memory.h>
 #include "stdio.h"
 #include "archi_softex.h"
 #include "hal_softex.h"
@@ -51,7 +50,9 @@ int main() {
       mchan_barrier(dma_id);
       mchan_free(dma_id);
     #else
-      memcpy(scores, scores_ext, LENGTH*FMT_WIDTH);
+      for (int i = 0; i < LENGTH; i++) {
+        scores [i] = scores_ext [i];
+      }
     #endif
 
     // Enable softex
