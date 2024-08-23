@@ -81,8 +81,10 @@ int main() {
 
     // Enable RedMulE
     hwpe_cg_enable();
+    asm volatile("": : :"memory");
 
     hwpe_soft_clear();
+    asm volatile("": : :"memory");
 
     // redmule_cfg ((unsigned int) x,
     //              (unsigned int) w,

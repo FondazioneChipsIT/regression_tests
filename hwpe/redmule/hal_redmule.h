@@ -81,8 +81,12 @@ static inline unsigned int hwpe_get_status() {
   return HWPE_READ(REDMULE_STATUS);
 }
 
+static inline unsigned int hwpe_get_running_job() {
+  return HWPE_READ(REDMULE_RUNNING_JOB);
+}
+
 static inline void hwpe_soft_clear() {
-  HWPE_WRITE(1, REDMULE_SOFT_CLEAR);
+  HWPE_WRITE(0, REDMULE_SOFT_CLEAR);
 }
 
 static inline void hwpe_cg_enable() {
@@ -97,6 +101,15 @@ static inline void redmule_evt_wait() {
   do {
     eu_evt_maskWaitAndClr (1 << ARCHI_CL_HWPE_EVT0);
   } while((*(int volatile *)(ARCHI_CLUST_HWPE_BASE + REDMULE_STATUS)) != 0);
+}
+
+static inline int hwpe_wait_acquire() {
+  int job_id = hwpe_acquire_job();
+  while(job_id < 0) {
+    eu_evt_maskWaitAndClr (1 << ARCHI_CL_HWPE_EVT0);
+    job_id = hwpe_acquire_job();
+  }
+  return job_id;
 }
 
 static inline unsigned int redmule_get_data_correctable_count () {
