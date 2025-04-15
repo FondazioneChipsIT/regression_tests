@@ -11,8 +11,8 @@ int main() {
             uint32_t dma_src;
             uint32_t dma_dst;
 
-            uint32_t len_2d     = 4; // Effectively passed as stride at the destination memory
-            uint32_t stride_2d  = 16; // Effectively passed as stride at the source memory
+            uint32_t len_2d     = 4; // Effectively passed as stride to compute the source address
+            uint32_t stride_2d  = 4; // Effectively passed as stride to compute the destination address
 
             uint32_t factor_2d = stride_2d / len_2d;
 
@@ -20,7 +20,7 @@ int main() {
             int words_transfer_size = byte_transfer_sizes[k] / sizeof(uint32_t);
 
             // Allocate source and destination arrays
-            int dst_size = words_transfer_size * factor_2d;
+            int dst_size = words_transfer_size;
             int src_size = words_transfer_size;
 
             uint32_t src[src_size];
@@ -29,6 +29,7 @@ int main() {
             // fill src array & clear dst array
             for (int i = 0; i < src_size; i++) {
                 src[i] = i+1;
+                PRINTF ("@%8x -> src[%d]: %d \n", &src[i], i, src[i]);
             }
 
             for (int i = 0; i < dst_size; i++) {
@@ -47,21 +48,16 @@ int main() {
 
             plp_dma_wait(plp_dma_memcpy_2d(dma_dst, dma_src, byte_transfer_sizes[k], stride_2d, len_2d, 0));
 
-            int j=0;
             // Loop on the number of words moved by the iDMA for the current transfer
-            for (int i = 0; i < words_transfer_size; i++) {
-                j = i * factor_2d;
-
-                // Check if the data in the destination memory is correct
-                if (dst[j] != src[i]) {
+            uint32_t *dst_addr;
+            for (int i = 0; i < dst_size; i++) {
+                dst_addr = (uint32_t *)((uint8_t *)dst + i * stride_2d);
+                PRINTF("@%8x -> value: %d \n", dst_addr, *dst_addr);
+                if (*dst_addr != src[i]) {
                     test_status = 1;
-                    PRINTF("ERROR ==> Dst[%d]: %d vs Src[%d]: %d \n", j, dst[j], i, src[i]);
+                    PRINTF("ERROR ==> Dst[%d]: %d vs Src[%d]: %d \n", i, *dst_addr, i, src[i]);
                     errors[k] = errors[k] + 1;
                 }
-            }
-
-            for (int i = 0; i< dst_size; i++) {
-                PRINTF("@%8x: Dst[%d]: %d \n", &dst[i], i, dst[i]);
             }
 
             // clear both src and dst arrays
@@ -71,7 +67,8 @@ int main() {
                 src[i] = 0;
             }
             for (int i = 0; i < dst_size; i++) {
-                dst[i] = 0;
+                dst_addr = (uint32_t *)((uint8_t *)dst + i * stride_2d);
+                *dst_addr = 0;
             }
             PRINTF("Transfer %d finished with %d errors \n", k, errors[k]);
             PRINTF("--------------------------------------------------\n");
