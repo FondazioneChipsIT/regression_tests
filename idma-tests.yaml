@@ -1,4 +1,7 @@
 idma_tests:
-  first_test:
-    path: ./idma_tests/first_test
+  simple_transfer:
+    path: ./idma_tests/idma_simple_transfer
+    command: make clean all run
+  2d_transfer:
+    path: ./idma_tests/idma_2d_transfer
     command: make clean all run
