@@ -10,45 +10,60 @@ int main() {
     // Loop on the number of simple transfers to be executed by the iDMA (specified in idma_defines.h)
     for (int k = 0; k < NB_TRANSFERS; k++) {
 
-      uint32_t dma_src;
-      uint32_t dma_dst;
+      uint32_t dma_src_start_addr;
+      uint32_t dma_dst_start_addr;
+
+      PRINTF ("Transfer %d \n", k);
+      PRINTF ("Number of words to be transferred: %d \n", nb_words[k]);
 
       // Allocate source and destination arrays
-      uint32_t src[byte_transfer_sizes[k] / sizeof(uint32_t)];
-      uint32_t dst[byte_transfer_sizes[k] / sizeof(uint32_t)];
+      uint32_t src[nb_words[k] * sizeof(uint32_t)];
+      uint32_t dst[nb_words[k] * sizeof(uint32_t)];
 
-      // fill src array & clear dst array
-      for (int i = 0; i < (byte_transfer_sizes[k] / sizeof(uint32_t)); i++) {
-        src[i] = i;
-        dst[i] = 0;
+      dma_src_start_addr = (int)&src;
+      dma_dst_start_addr = (int)&dst;
+
+      uint32_t *src_addr;
+      uint32_t *dst_addr;
+
+      // Fill src array with test data
+      for (int i = 0; i < nb_words[k]; i++) {
+        src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr + i * sizeof(uint32_t));
+        *src_addr = i+1;
       }
 
-      dma_src = (int)&src;
-      dma_dst = (int)&dst;
+      // Clear the destination array
+      for (int i = 0; i < nb_words[k]; i++) {
+        dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr + i * sizeof(uint32_t));
+        *dst_addr = 0;
+      }
 
-      PRINTF("SRC ADDR: %x \n", dma_src);
-      PRINTF("DST ADDR: %x \n", dma_dst);
-      PRINTF("TRANSFER SIZE: %d \n", byte_transfer_sizes[k]);
-      PRINTF("NB_ELEMENTS: %d \n", byte_transfer_sizes[k] / sizeof(uint32_t));
-
-      plp_dma_wait(plp_dma_memcpy(dma_dst, dma_src, byte_transfer_sizes[k], 0));
+      plp_dma_wait(plp_dma_memcpy(dma_dst_start_addr, dma_src_start_addr, nb_words[k] * sizeof(uint32_t), 0));
 
       // Loop on the number of words moved by the iDMA for the current transfer
-      for (int i = 0; i < (byte_transfer_sizes[k] / sizeof(uint32_t)); i++) {
-        if (dst[i] != src[i]) {
+      for (int i = 0; i < nb_words[k]; i++) {
+        src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr+ i * sizeof(uint32_t));
+        dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr+ i * sizeof(uint32_t));
+        if (*dst_addr != *src_addr) {
           test_status = 1;
-          PRINTF("ERROR ==> Dst[%d]: %d vs Src[%d]: %d \n", i, dst[i], i, src[i]);
+          PRINTF("ERROR ==> Dst[%d]: %d vs Src[%d]: %d \n", i, *dst_addr, i, *src_addr);
           errors[k] = errors[k] + 1;
-        }
+      }
       }
       // clear both src and dst arrays
       // to prepare for the next transfer
       // this is not necessary, but it makes debugging easier
       // and allows to see the errors in the next transfer
             
-      for (int i = 0; i < (byte_transfer_sizes[k] / sizeof(uint32_t)); i++) {
-        src[i] = 0;
-        dst[i] = 0;
+      // Clear both the source and the destination arrays to avoid issues with the following transfer
+      for (int i = 0; i < nb_words[k]; i++) {
+        src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr+ i * sizeof(uint32_t));
+        *src_addr = 0;
+      }
+
+      for (int i = 0; i < nb_words[k]; i++) {
+        dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr + i * sizeof(uint32_t));
+        *dst_addr = 0;
       }
       PRINTF("Transfer %d finished with %d errors \n", k, errors[k]);
       PRINTF("--------------------------------------------------\n");
