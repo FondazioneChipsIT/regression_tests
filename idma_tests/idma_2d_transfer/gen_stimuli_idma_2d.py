@@ -11,11 +11,21 @@ parser = argparse.ArgumentParser(description='Generate stimuli for iDMA simple t
 
 args = parser.parse_args()
 
-def write_transfer_sizes_array(f, name, arr):
-    f.write ('unsigned int %s[] = {\n' % name)
+def write_transfer_parameters_struct(f, name):
+    f.write ('typedef struct {\n')
+    f.write ('  unsigned int nb_words;\n')
+    f.write ('  unsigned int src_stride;\n')
+    f.write ('  unsigned int dst_stride;\n')
+    f.write ('} %s;\n\n' % name)
+    return
+
+def write_transfer_parameters_array(f, name, arr):
+    f.write ('TransferParameters %s[] = {\n' % name)
     for v in arr:
-        random_int = random.randint(1, MAX_SIZE)
-        f.write('%d, \n' % random_int)
+        nb_words = random.randint(1, MAX_SIZE)
+        src_stride = random.randint(1, MAX_STRIDE)
+        dst_stride = random.randint(1, MAX_STRIDE)
+        f.write('{%d, %d, %d}, \n' % (nb_words, src_stride, dst_stride))
     f.write('};\n\n')
     return
 
@@ -31,11 +41,16 @@ NB_TRANSFERS = random.randint(1, 50)
 
 # Randomize between 1 and 500 the size of each transfer
 
-MAX_SIZE     = 500
-byte_transfer_sizes = [None] * NB_TRANSFERS
+MAX_SIZE     = 16
+MAX_STRIDE   = 3
+transfer_params = [None] * NB_TRANSFERS
 
-f_sizes = open('transfer_sizes.h', 'w')
-f_defines = open ('idma_defines.h', 'w')
+f_params    = open('idma_parameters.h', 'w')
+f_defines   = open('idma_defines.h', 'w')
 
-write_transfer_sizes_array(f_sizes, 'byte_transfer_sizes', byte_transfer_sizes)
 write_define(f_defines, 'NB_TRANSFERS', NB_TRANSFERS)
+write_transfer_parameters_struct(f_params, 'TransferParameters')
+write_transfer_parameters_array(f_params, 'transfer_params', transfer_params)
+
+f_params.close()
+f_defines.close()
