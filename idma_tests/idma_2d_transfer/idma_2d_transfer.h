@@ -27,6 +27,7 @@ extern "C" {
 #define DMA_CONF_DEBURST 0
 #define DMA_CONF_SERIALIZE 0
 
+#define TEST_ALL_CORES 1
 #define VERBOSE 0
 
 #if VERBOSE
