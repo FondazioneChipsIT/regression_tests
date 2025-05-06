@@ -51,7 +51,7 @@ int idma_2d_transfer (int k, int ext2loc) {
         src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr+ i * src_addr_stride);
         dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr+ i * dst_addr_stride);
         if (*dst_addr != *src_addr) {
-            PRINTF("ERROR ==> Dst[%d]: %d vs Src[%d]: %d \n", i, *dst_addr, i, *src_addr);
+            PRINTF("ERRORS ==> @%8x Dst[%d]: %d vs @%8x Src[%d]: %d \n", dst_addr, i, *dst_addr, src_addr, i, *src_addr);
             errors++;
         }
     }
@@ -82,13 +82,15 @@ int main() {
                 for (int k = 0; k < NB_TRANSFERS; k++) {
                     /* Local memory to external */
                     errors[k] += idma_2d_transfer(k, 0);
+                    PRINTF("Transfer  L1 -> L2 %d finished with %d errors \n", k, errors[k]);
+                    PRINTF("--------------------------------------------------\n");
                     /* External memory to local */
                     errors[k] += idma_2d_transfer(k, 1);
+                    PRINTF("Transfer L2 -> L1 %d finished with %d errors \n", k, errors[k]);
+                    PRINTF("--------------------------------------------------\n");
                     if (errors[k] != 0) {
                         test_status = 1;
                     }
-                    PRINTF("Transfer %d finished with %d errors \n", k, errors);
-                    PRINTF("--------------------------------------------------\n");
                 }
             }
             synch_barrier();
@@ -100,13 +102,15 @@ int main() {
         for (int k = 0; k < NB_TRANSFERS; k++) {
             /* Local memory to external */
             errors[k] += idma_2d_transfer(k, 0);
+            PRINTF("Transfer  L1 -> L2 %d finished with %d errors \n", k, errors[k]);
+            PRINTF("--------------------------------------------------\n");
             /* External memory to local */
             errors[k] += idma_2d_transfer(k, 1);
+            PRINTF("Transfer L2 -> L1 %d finished with %d errors \n", k, errors[k]);
+            PRINTF("--------------------------------------------------\n");
             if (errors[k] != 0) {
                 test_status = 1;
             }
-            PRINTF("Transfer %d finished with %d errors \n", k, errors);
-            PRINTF("--------------------------------------------------\n");
         }
     }
     }

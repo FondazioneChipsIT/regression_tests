@@ -28,7 +28,7 @@ int idma_simple_transfer (int k, int ext2loc) {
   // Clear the destination array
   for (int i = 0; i < nb_words[k]; i++) {   
     dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr + i * sizeof(uint32_t));
-    *dst_addr = 0;
+    *dst_addr = nb_words[k]-i;
   }
 
   plp_dma_wait(plp_dma_memcpy(dma_dst_start_addr, dma_src_start_addr, nb_words[k] * sizeof(uint32_t), ext2loc));
@@ -38,7 +38,7 @@ int idma_simple_transfer (int k, int ext2loc) {
     src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr+ i * sizeof(uint32_t));
     dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr+ i * sizeof(uint32_t));
     if (*dst_addr != *src_addr) {
-      PRINTF("ERROR ==> Dst[%d]: %d vs Src[%d]: %d \n", i, *dst_addr, i, *src_addr);
+      PRINTF("ERRORS ==> @%8x L2[%d]: %d vs @%8x L1[%d]: %d \n", dst_addr, i, *dst_addr, src_addr, i, *src_addr);
       errors++;
     }
   }
@@ -68,9 +68,9 @@ int main() {
         PRINTF("Testing iDMA with cluster core %d\n", core);
         
         for (int k = 0; k < NB_TRANSFERS; k++) {
-          /* Local memory to external */
+          /* Local memory to external --> L1 to L2 */
           errors[k] += idma_simple_transfer(k, 0);
-          /* External memory to local */
+          /* External memory to local --> L2 to L1 */
           errors[k] += idma_simple_transfer(k, 1);
           if (errors[k] != 0) {
             test_status = 1;
@@ -86,15 +86,17 @@ int main() {
       PRINTF("Testing iDMA with cluster core 0\n");
       // Loop on the number of simple transfers to be executed by the iDMA (specified in idma_defines.h)
       for (int k = 0; k < NB_TRANSFERS; k++) {
-        /* Local memory to external */
+        /* Local memory to external --> L1 to L2 */
         errors[k] += idma_simple_transfer(k, 0);
-        /* External memory to local */
+        PRINTF("Transfer  L1 -> L2 %d finished with %d errors \n", k, errors[k]);
+        PRINTF("--------------------------------------------------\n");
+        /* External memory to local --> L2 to L1 */
         errors[k] += idma_simple_transfer(k, 1);
+        PRINTF("Transfer L2 -> L1 %d finished with %d errors \n", k, errors[k]);
+        PRINTF("--------------------------------------------------\n");
         if (errors[k] != 0) {
           test_status = 1;
         }
-        PRINTF("Transfer %d finished with %d errors \n", k, errors[k]);
-        PRINTF("--------------------------------------------------\n");
       }
     }
   }
