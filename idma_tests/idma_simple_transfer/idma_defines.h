@@ -1,2 +1,2 @@
-#define NB_TRANSFERS 36
+#define NB_TRANSFERS 8
 
