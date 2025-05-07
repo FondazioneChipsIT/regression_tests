@@ -44,7 +44,7 @@ int idma_2d_transfer (int k, int ext2loc) {
     transfer_size = nb_words * sizeof(uint32_t) * transfer_params[k].src_stride;
 
     // Execute the iDMA transfer and wait for its completion
-    plp_dma_wait(plp_dma_memcpy_2d(dma_dst_start_addr, dma_src_start_addr, transfer_size, dst_addr_stride, src_addr_stride, 0));
+    plp_dma_wait(plp_dma_memcpy_2d(dma_dst_start_addr, dma_src_start_addr, transfer_size, dst_addr_stride, src_addr_stride, ext2loc));
 
     // Loop on the transfer size to check if the transfer was successful
     for (int i = 0; i < nb_words; i++) {
