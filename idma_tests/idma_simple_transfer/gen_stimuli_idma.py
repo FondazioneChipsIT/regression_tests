@@ -31,7 +31,7 @@ NB_TRANSFERS = random.randint(1, 50)
 
 # Randomize between 1 and 500 the size of each transfer
 
-MAX_SIZE     = 32
+MAX_SIZE     = 500
 nb_words = [None] * NB_TRANSFERS
 
 f_sizes = open('transfer_sizes.h', 'w')
