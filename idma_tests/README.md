@@ -2,9 +2,9 @@
 
 This folder contains basic tests for the iDMA IP. 
 Currently, the following are supported:
-- 1D transfers: both from L2 to L1 and from L1 to L2.
-- 2D transfers: strides can be configured in the source and destination memory regions.
-- 3D transfers: multiple 2D pages can be moved between L1 and L2.
+- **1D transfers**: both from L2 to L1 and from L1 to L2.
+- **2D transfers**: strides can be configured in the source and destination memory regions.
+- **3D transfers**: multiple 2D pages can be moved between L1 and L2.
 
 To launch each test:
 1. Move into the respective folder.
