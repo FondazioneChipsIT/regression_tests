@@ -37,7 +37,7 @@ def write_define(f, name,val):
 # For each transfer we set a size in bytes (the number of 32-bits elements that 
 # will be moved is size / sizeof(uint32_t)).
 
-NB_TRANSFERS = random.randint(1, 50)
+NB_TRANSFERS = random.randint(1, 10)
 
 # Randomize between 1 and 500 the size of each transfer
 

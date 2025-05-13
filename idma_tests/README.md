@@ -15,7 +15,7 @@ To launch each test:
 
 ### Ongoing
 
-The following developements are ongoin:
+The following developements are ongoing:
 - Tests for multi-core execution
 - Tests for parallel transfer execution
 - Tests for L1 to L1 data transfers.
