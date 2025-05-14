@@ -68,7 +68,8 @@ int idma_3d_transfer (int k, int ext2loc) {
     transfer_size = nb_words * sizeof(uint32_t) * transfer_params[k].reps_3d;
 
     // Execute the iDMA transfer and wait for its completion
-    plp_dma_wait(plp_dma_memcpy_3d(dma_dst_start_addr, dma_src_start_addr, transfer_size, dst_addr_stride_2d, src_addr_stride_2d, dst_addr_stride_3d, src_addr_stride_3d, reps_2d, reps_3d, ext2loc));
+    plp_dma_memcpy_3d(dma_dst_start_addr, dma_src_start_addr, transfer_size, dst_addr_stride_2d, src_addr_stride_2d, dst_addr_stride_3d, src_addr_stride_3d, reps_2d, reps_3d, ext2loc);
+    plp_dma_barrier();
 
     // Loop on the transfer size to check if the transfer was successful
     src_addr = dma_src_start_addr;
