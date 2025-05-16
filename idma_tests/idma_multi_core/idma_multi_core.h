@@ -13,8 +13,8 @@
 #include <string.h>
 #include <assert.h>
 
-// #include "idma_defines.h"
-// #include "idma_parameters.h"
+#include "idma_defines.h"
+#include "transfer_sizes.h"
 
 #ifndef _DMA_FRONTEND_REG_DEFS_
 #define _DMA_FRONTEND_REG_DEFS_
