@@ -27,19 +27,19 @@ int idma_simple_transfer (int k, int ext2loc, int loc2loc) {
 
   // Fill src array with test data
   for (int i = 0; i < nb_words[k]; i++) {
-    src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr + i * sizeof(uint32_t));
+    src_addr = (uint32_t *)(dma_src_start_addr + i * sizeof(uint32_t));
     *src_addr = i+1;
   }
 
   // Clear the src2 array: Works as destination array for the L1 to L1 transfer --> ONGOING
   for (int i = 0; i < nb_words[k]; i++) {
-    src_2_addr = (uint32_t *)((uint8_t *)dma_src_2_start_addr + i * sizeof(uint32_t));
+    src_2_addr = (uint32_t *)(dma_src_2_start_addr + i * sizeof(uint32_t));
     *src_2_addr = 0;
   }
 
   // Clear the destination array
   for (int i = 0; i < nb_words[k]; i++) {   
-    dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr + i * sizeof(uint32_t));
+    dst_addr = (uint32_t *)(dma_dst_start_addr + i * sizeof(uint32_t));
     *dst_addr = nb_words[k]-i;
   }
 
@@ -47,8 +47,8 @@ int idma_simple_transfer (int k, int ext2loc, int loc2loc) {
     plp_dma_wait(pulp_idma_L1ToL1(dma_src_2_start_addr, dma_src_start_addr, nb_words[k] * sizeof(uint32_t)));
     // Loop on the number of words moved by the iDMA for the current transfer
     for (int i = 0; i < nb_words[k]; i++) {
-      src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr+ i * sizeof(uint32_t));
-      src_2_addr = (uint32_t *)((uint8_t *)dma_src_2_start_addr+ i * sizeof(uint32_t));
+      src_addr = (uint32_t *)(dma_src_start_addr+ i * sizeof(uint32_t));
+      src_2_addr = (uint32_t *)(dma_src_2_start_addr+ i * sizeof(uint32_t));
       if (*src_2_addr != *src_addr) {
         PRINTF("ERRORS ==> @%8x L1[%d]: %d vs @%8x L1[%d]: %d \n", src_2_addr, i, *src_2_addr, src_addr, i, *src_addr);
         errors++;
@@ -61,8 +61,8 @@ int idma_simple_transfer (int k, int ext2loc, int loc2loc) {
 
   // Loop on the number of words moved by the iDMA for the current transfer
   for (int i = 0; i < nb_words[k]; i++) {
-    src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr+ i * sizeof(uint32_t));
-    dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr+ i * sizeof(uint32_t));
+    src_addr = (uint32_t *)(dma_src_start_addr+ i * sizeof(uint32_t));
+    dst_addr = (uint32_t *)(dma_dst_start_addr+ i * sizeof(uint32_t));
     if (*dst_addr != *src_addr) {
       PRINTF("ERRORS ==> @%8x L2[%d]: %d vs @%8x L1[%d]: %d \n", dst_addr, i, *dst_addr, src_addr, i, *src_addr);
       errors++;
@@ -71,17 +71,17 @@ int idma_simple_transfer (int k, int ext2loc, int loc2loc) {
 
   // Clear both the source arrays and the destination array to avoid issues with the following transfer
   for (int i = 0; i < nb_words[k]; i++) {
-    src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr+ i * sizeof(uint32_t));
+    src_addr = (uint32_t *)(dma_src_start_addr+ i * sizeof(uint32_t));
     *src_addr = 0;
   }
 
   for (int i = 0; i < nb_words[k]; i++) {
-    src_2_addr = (uint32_t *)((uint8_t *)dma_src_2_start_addr+ i * sizeof(uint32_t));
+    src_2_addr = (uint32_t *)(dma_src_2_start_addr+ i * sizeof(uint32_t));
     *src_2_addr = 0;
   }
 
   for (int i = 0; i < nb_words[k]; i++) {
-    dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr + i * sizeof(uint32_t));
+    dst_addr = (uint32_t *)(dma_dst_start_addr + i * sizeof(uint32_t));
     *dst_addr = 0;
   }
 

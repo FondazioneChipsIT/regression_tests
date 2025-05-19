@@ -29,13 +29,13 @@ int idma_2d_transfer (int k, int ext2loc) {
 
     // Fill src array with test data
     for (int i = 0; i < nb_words; i++) {
-        src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr + i * src_addr_stride);
+        src_addr = (uint32_t *)(dma_src_start_addr + i * src_addr_stride);
         *src_addr = i+1;
     }
 
     // Clear the destination array
     for (int i = 0; i < nb_words; i++) {
-        dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr + i * dst_addr_stride);
+        dst_addr = (uint32_t *)(dma_dst_start_addr + i * dst_addr_stride);
         *dst_addr = 0;
     }
 
@@ -49,8 +49,8 @@ int idma_2d_transfer (int k, int ext2loc) {
 
     // Loop on the transfer size to check if the transfer was successful
     for (int i = 0; i < nb_words; i++) {
-        src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr+ i * src_addr_stride);
-        dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr+ i * dst_addr_stride);
+        src_addr = (uint32_t *)(dma_src_start_addr+ i * src_addr_stride);
+        dst_addr = (uint32_t *)(dma_dst_start_addr+ i * dst_addr_stride);
         if (*dst_addr != *src_addr) {
             PRINTF("ERRORS ==> @%8x Dst[%d]: %d vs @%8x Src[%d]: %d \n", dst_addr, i, *dst_addr, src_addr, i, *src_addr);
             errors++;
@@ -59,12 +59,12 @@ int idma_2d_transfer (int k, int ext2loc) {
 
     // Clear both the source and the destination arrays to avoid issues with the following transfer
     for (int i = 0; i < nb_words; i++) {
-        src_addr = (uint32_t *)((uint8_t *)dma_src_start_addr+ i * src_addr_stride);
+        src_addr = (uint32_t *)(dma_src_start_addr+ i * src_addr_stride);
         *src_addr = 0;
     }
 
     for (int i = 0; i < nb_words; i++) {
-        dst_addr = (uint32_t *)((uint8_t *)dma_dst_start_addr + i * dst_addr_stride);
+        dst_addr = (uint32_t *)(dma_dst_start_addr + i * dst_addr_stride);
         *dst_addr = 0;
     }
 
