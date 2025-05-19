@@ -37,7 +37,10 @@ int main () {
             *dst_addr = nb_words[k]-i;
         }
 
-        plp_cl_dma_wait(plp_cl_dma_memcpy(dma_dst_start_addr, dma_src_start_addr, nb_words[k] * sizeof(uint32_t), core_id % 2));
+        // A bit of randomness on this parameter to have each core perform transfers in both directions
+        int ext2loc = (core_id+nb_words[k]) % 2;
+
+        plp_cl_dma_wait(plp_cl_dma_memcpy(dma_dst_start_addr, dma_src_start_addr, nb_words[k] * sizeof(uint32_t), ext2loc));
 
         // Loop on the number of words moved by the iDMA for the current transfer
         for (int i = 0; i < nb_words[k]; i++) {
@@ -93,7 +96,10 @@ int main () {
             errors_global += errors;
         }
 
-        // Synchronize all cores before updating the memory boundaries for each core
+        // Synchronize all cores before updating the memory boundaries for each core -->
+        // Cores that are already setting up the next transfer might overlap with cores
+        // that are still checking results from the previous transfer.
+
         synch_barrier();
     }
 
