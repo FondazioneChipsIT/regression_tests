@@ -37,12 +37,7 @@ int main () {
             *dst_addr = nb_words[k]-i;
         }
 
-        plp_cl_dma_memcpy(dma_dst_start_addr, dma_src_start_addr, nb_words[k] * sizeof(uint32_t), core_id % 2);
-
-        plp_dma_barrier();
-
-        // Synchronize all cores before checking the results
-        synch_barrier();
+        plp_cl_dma_wait(plp_cl_dma_memcpy(dma_dst_start_addr, dma_src_start_addr, nb_words[k] * sizeof(uint32_t), core_id % 2));
 
         // Loop on the number of words moved by the iDMA for the current transfer
         for (int i = 0; i < nb_words[k]; i++) {
