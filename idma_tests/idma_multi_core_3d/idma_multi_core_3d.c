@@ -32,9 +32,6 @@ int test_idma_3D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
         for (int j = 0; j < num_reps_3d; j++) {
             for (int i = 0; i < size * max_stride; i++) {
                 src_ptr[i+offset_3d] = (uint8_t)(i & 0xFF);
-                if (core_id == 0) {
-                    PRINTF ("Src_ptr[%d] @%8x = %8x \n", i+offset_3d, &src_ptr[i+offset_3d], src_ptr[i+offset_3d]);
-                }
             }
             offset_3d += size * max_stride;
         }
@@ -78,7 +75,9 @@ int test_idma_3D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
                 }
                 if (expected != actual) {
                     error++;
-                    PRINTF ("ERROR: expected @%8x[%d] = %8x vs actual @%8x[%d] = %8x \n", &src_ptr[src_offset_2d + i + src_offset_3d], src_offset_2d + i + src_offset_3d, expected, &dst_ptr[dst_offset_2d + i + dst_offset_3d], dst_offset_2d + i + dst_offset_3d, actual);
+                    if (core_id == 0) {
+                        PRINTF ("ERROR: expected @%8x[%d] = %8x vs actual @%8x[%d] = %8x \n", &src_ptr[src_offset_2d + i + src_offset_3d], src_offset_2d + i + src_offset_3d, expected, &dst_ptr[dst_offset_2d + i + dst_offset_3d], dst_offset_2d + i + dst_offset_3d, actual);
+                    }
                 }
                     
             }
@@ -142,12 +141,13 @@ int main () {
         for (int k = 0; k < NB_TRANSFERS; k++) {
             size = transfer_params[k].size;
             length = transfer_params[k].length;
-            // num_reps = transfer_params[k].num_reps;
             src_stride_2d = transfer_params[k].src_stride_2d;
             dst_stride_2d = transfer_params[k].dst_stride_2d;
-
-            // errors[core_id] += test_idma_2D(core_id, size, (core_id%2), ext_addr, loc_addr, length, src_stride_2d, dst_stride_2d, size/length);
-            // synch_barrier();
+            src_stride_3d = transfer_params[k].src_stride_3d;
+            dst_stride_3d = transfer_params[k].dst_stride_3d;
+            num_reps_3d   = transfer_params[k].num_reps_3d;
+            errors[core_id] += test_idma_3D(core_id, size, (core_id%2), ext_addr, loc_addr, length, src_stride_2d, dst_stride_2d, (size/length), src_stride_3d, dst_stride_3d, num_reps_3d);
+            synch_barrier();
         }
     #else
         // SINGLE CORE MODE: just core 0 uses the iDMA
@@ -155,7 +155,6 @@ int main () {
             for (int k = 0; k < NB_TRANSFERS; k++) {
                 size = transfer_params[k].size;
                 length = transfer_params[k].length;
-                // num_reps = transfer_params[k].num_reps;
                 src_stride_2d = transfer_params[k].src_stride_2d;
                 dst_stride_2d = transfer_params[k].dst_stride_2d;
                 src_stride_3d = transfer_params[k].src_stride_3d;
