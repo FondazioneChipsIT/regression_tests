@@ -6,6 +6,10 @@ ifdef VERBOSE
 PULP_CFLAGS += -DVERBOSE
 endif
 
+ifdef TEST_ALL_CORES
+PULP_CFLAGS += -DTEST_ALL_CORES
+endif
+
 PULP_CFLAGS += -O3
 stackSize = 4096
 

@@ -27,9 +27,6 @@ extern "C" {
 #define DMA_CONF_DEBURST 0
 #define DMA_CONF_SERIALIZE 0
 
-#define VERBOSE 1
-#define TEST_ALL_CORES 0
-
 #if VERBOSE
     #define PRINTF(...) printf(__VA_ARGS__)
 #else

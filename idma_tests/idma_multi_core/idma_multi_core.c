@@ -1,110 +1,105 @@
 #include "idma_multi_core.h"
 
 #define MAX_BUFFER_SIZE 0x2200
+#define CORE_SPACE 0x1000
 
-L1_DATA src[MAX_BUFFER_SIZE];
-L2_DATA dst[MAX_BUFFER_SIZE];
+L2_DATA ext[MAX_BUFFER_SIZE];
+L1_DATA loc[MAX_BUFFER_SIZE];
 
-static int errors_global = 0;
+int errors[8] = {0};
+int test_status = 0;
 
-int main () {
+int test_idma_1D (uint32_t size, int ext2loc, uint32_t ext_addr, uint32_t tcdm_addr) {
+    volatile uint8_t *src_ptr, *dst_ptr;
 
-    uint32_t errors = 0;
-    uint32_t dma_src_start_addr;
-    uint32_t dma_dst_start_addr;
-    uint32_t *src_addr;
-    uint32_t *dst_addr;
-    uint32_t addr_offset = 0;
+    int error = 0;
 
-    int core_id = rt_core_id();
+    if (ext2loc == 1) {
+        // L2 to L1 transfer
+        src_ptr = (uint8_t*) ext_addr;
+        dst_ptr = (uint8_t*) tcdm_addr;
 
-    for (int k=0; k<NB_TRANSFERS; k++) {
-        // Synchronize all cores before allocating the buffers
-        addr_offset = nb_words[k] * core_id * sizeof(uint32_t);
-
-        dma_src_start_addr = (uint32_t)&src + addr_offset;
-        dma_dst_start_addr = (uint32_t)&dst + addr_offset;
-
-        // Fill the source array with test data
-        for (int i=0; i<nb_words[k]; i++) {
-            src_addr = (uint32_t *)(dma_src_start_addr + i * sizeof(uint32_t));
-            *src_addr = i+1;
-        }
-    
-        // Clear the destination array
-        for (int i=0; i<nb_words[k]; i++) {
-            dst_addr = (uint32_t *)(dma_dst_start_addr + i * sizeof(uint32_t));
-            *dst_addr = nb_words[k]-i;
+        // Fill source region with test data
+        for (int i = 0; i < size; i++) {
+                src_ptr[i] = (uint8_t)(i & 0xFF);
         }
 
-        // A bit of randomness on this parameter to have each core perform transfers in both directions
-        int ext2loc = (core_id+nb_words[k]) % 2;
+        pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
 
-        plp_cl_dma_wait(plp_cl_dma_memcpy(dma_dst_start_addr, dma_src_start_addr, nb_words[k] * sizeof(uint32_t), ext2loc));
+    } else {
+        // L1 to L2 transfer
+        src_ptr = (uint8_t*) tcdm_addr;
+        dst_ptr = (uint8_t*) ext_addr;
 
-        // Loop on the number of words moved by the iDMA for the current transfer
-        for (int i = 0; i < nb_words[k]; i++) {
-            src_addr = (uint32_t *)(dma_src_start_addr + i * sizeof(uint32_t));
-            dst_addr = (uint32_t *)(dma_dst_start_addr + i * sizeof(uint32_t));
-
-            if (*dst_addr != *src_addr) {
-                errors++; 
-            }
+        // Fill source region with test data
+        for (int i = 0; i < size; i++) {
+            src_ptr[i] = (uint8_t)(i & 0xFF);
         }
 
-        // Clear the source array with test data
-        for (int i=0; i<nb_words[k]; i++) {
-            src_addr = (uint32_t *)(dma_src_start_addr + i * sizeof(uint32_t));
-            *src_addr = 0;
-        }
-    
-        // Clear the destination array
-        for (int i=0; i<nb_words[k]; i++) {
-            dst_addr = (uint32_t *)(dma_dst_start_addr + i * sizeof(uint32_t));
-            *dst_addr = 0;
-        }
-
-        if (core_id == 0) {
-            errors_global += errors;
-        }
-
-        if (core_id == 1) {
-            errors_global += errors;
-        }
-
-        if (core_id == 2) {
-            errors_global += errors;
-        }
-
-        if (core_id == 3) {
-            errors_global += errors;
-        }
-
-        if (core_id == 4) {
-            errors_global += errors;
-        }
-
-        if (core_id == 5) {
-            errors_global += errors;
-        }
-
-        if (core_id == 6) {
-            errors_global += errors;
-        }
-
-        if (core_id == 7) {
-            errors_global += errors;
-        }
-
-        // Synchronize all cores before updating the memory boundaries for each core -->
-        // Cores that are already setting up the next transfer might overlap with cores
-        // that are still checking results from the previous transfer.
-
-        synch_barrier();
+        pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
     }
 
-    // Synchronize all cores before exiting the test
-    synch_barrier();
+    plp_cl_dma_barrier();
 
-    return errors_global;
+    // Check the results
+
+    for (int i=0; i < size; i++) {
+        uint8_t expected = src_ptr[i]; 
+        uint8_t actual   = dst_ptr[i];
+
+        if (expected != actual) {
+            error++;
+            if (core_id == 0) {
+                PRINTF ("Error: expected @%8x = %8x vs actual @%8x = %8x \n", expected, &src_ptr[i], actual, &dst_ptr[i]);
+            }
+        }
+    }
+
+    return error;
+}
+
+int main () {
+    int core_id = rt_core_id();
+
+    unsigned int size;
+    uint32_t ext_addr;
+    uint32_t loc_addr;
+
+    ext_addr = (uint32_t)ext + core_id * CORE_SPACE;
+    loc_addr = (uint32_t)loc + core_id * CORE_SPACE;
+
+    #ifdef TEST_ALL_CORES
+        // MULTI CORE MODE: all cores in parallel use the iDMA
+        if (core_id == 0) {
+            PRINTF ("Using all cores \n");
+        }
+        for (int k = 0; k < NB_TRANSFERS; k++) {
+            size = sizes[k];
+
+            errors[core_id] += test_idma_1D(size, ((core_id+sizes[k]) % 2), ext_addr, loc_addr);
+            synch_barrier();
+        }
+    #else
+        if (core_id == 0) {
+            // SINGLE CORE MODE: just core 0 uses the iDMA
+            PRINTF ("Just using Core 0 \n");
+            for (int k = 0; k < NB_TRANSFERS; k++) {
+                size = sizes[k];
+                PRINTF ("Transfer: %d | Size: %d \n", k, size);
+
+                errors[core_id] += test_idma_1D(size, ((core_id+sizes[k]) % 2), ext_addr, loc_addr);
+            } 
+        }
+    #endif
+
+    if (core_id == 0) {
+        for (int i = 0; i<8; i++) {
+            if (errors[i] !=0) {
+                PRINTF ("Core %d returned %d errors \n", i, errors[i]);
+                test_status = 1;
+            }
+        }
+    }
+
+    return test_status;
 }

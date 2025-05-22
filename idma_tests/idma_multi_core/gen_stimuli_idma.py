@@ -31,11 +31,11 @@ NB_TRANSFERS = random.randint(1, 10)
 
 # Randomize between 1 and 500 the size of each transfer
 
-MAX_SIZE     = 100
-nb_words = [None] * NB_TRANSFERS
+MAX_SIZE     = 4096
+sizes = [None] * NB_TRANSFERS
 
 f_sizes = open('transfer_sizes.h', 'w')
 f_defines = open ('idma_defines.h', 'w')
 
-write_transfer_sizes_array(f_sizes, 'nb_words', nb_words)
+write_transfer_sizes_array(f_sizes, 'sizes', sizes)
 write_define(f_defines, 'NB_TRANSFERS', NB_TRANSFERS)
