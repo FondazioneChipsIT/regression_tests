@@ -9,6 +9,7 @@ typedef struct {
 } TransferParameters;
 
 TransferParameters transfer_params[] = {
-{16, 2, 4, 4, 4, 4, 2}
+  {16, 3, 3, 3, 5, 5, 2},
+  {16, 2, 4, 4, 4, 4, 3},
 };
 

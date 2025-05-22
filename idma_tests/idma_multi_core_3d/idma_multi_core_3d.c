@@ -58,29 +58,33 @@ int test_idma_3D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
         pulp_cl_idma_L1ToL2_3d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride_2d, dst_stride_2d, num_reps, src_stride_3d, dst_stride_3d, num_reps_3d);
     }
 
-    // plp_cl_dma_barrier();
+    plp_cl_dma_barrier();
 
     // Check the results
-    
-    for (int rep_3d = 0; rep_3d < num_reps_3d; rep_3d ++) {
-        unsigned int src_offset_3d = rep_3d * num_reps * src_stride_2d * src_stride_3d;
-        unsigned int dst_offset_3d = rep_3d * num_reps * dst_stride_2d * dst_stride_3d;
-        for (unsigned int rep = 0; rep < num_reps; rep++) {
-            unsigned int src_offset = rep * src_stride_2d;
-            unsigned int dst_offset = rep * dst_stride_2d;
-            for (unsigned int i = 0; i < length; i++) {
-                uint8_t expected = src_ptr[src_offset + i + src_offset_3d];
-                uint8_t actual   = dst_ptr[dst_offset + i + dst_offset_3d];
+    unsigned int src_offset_2d = 0;
+    unsigned int dst_offset_2d = 0;
+    unsigned int src_offset_3d = 0;
+    unsigned int dst_offset_3d = 0;
 
+    for (int rep_3d = 0; rep_3d < num_reps_3d; rep_3d ++) {
+        for (unsigned int rep = 0; rep < num_reps; rep++) {
+            src_offset_2d = rep * src_stride_2d;
+            dst_offset_2d = rep * dst_stride_2d;
+            for (unsigned int i = 0; i < length; i++) {
+                uint8_t expected = src_ptr[src_offset_2d + i + src_offset_3d];
+                uint8_t actual   = dst_ptr[dst_offset_2d + i + dst_offset_3d];
+                if (core_id == 0) {
+                    
+                }
                 if (expected != actual) {
                     error++;
-                    if (core_id == 0) {
-                        PRINTF ("ERROR: expected @%8x[%d] = %8x vs actual @%8x[%d] = %8x \n", &src_ptr[src_offset + i + src_offset_3d], src_offset + i + src_offset_3d, expected, &dst_ptr[dst_offset + i + dst_offset_3d], dst_offset + i + dst_offset_3d, actual);
-                    }
+                    PRINTF ("ERROR: expected @%8x[%d] = %8x vs actual @%8x[%d] = %8x \n", &src_ptr[src_offset_2d + i + src_offset_3d], src_offset_2d + i + src_offset_3d, expected, &dst_ptr[dst_offset_2d + i + dst_offset_3d], dst_offset_2d + i + dst_offset_3d, actual);
                 }
-
+                    
             }
         }
+        src_offset_3d = src_offset_2d + src_stride_3d;
+        dst_offset_3d = dst_offset_2d + dst_stride_3d;
     }
 
     // Clear the source and destination regions
