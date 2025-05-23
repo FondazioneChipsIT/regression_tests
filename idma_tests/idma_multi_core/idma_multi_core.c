@@ -9,7 +9,7 @@ L1_DATA loc[MAX_BUFFER_SIZE];
 int errors[8] = {0};
 int test_status = 0;
 
-int test_idma_1D (uint32_t size, int ext2loc, uint32_t ext_addr, uint32_t tcdm_addr) {
+int test_idma_1D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, uint32_t tcdm_addr) {
     volatile uint8_t *src_ptr, *dst_ptr;
 
     int error = 0;
@@ -76,7 +76,7 @@ int main () {
         for (int k = 0; k < NB_TRANSFERS; k++) {
             size = sizes[k];
 
-            errors[core_id] += test_idma_1D(size, ((core_id+sizes[k]) % 2), ext_addr, loc_addr);
+            errors[core_id] += test_idma_1D(core_id, size, ((core_id+sizes[k]) % 2), ext_addr, loc_addr);
             synch_barrier();
         }
     #else
@@ -87,7 +87,7 @@ int main () {
                 size = sizes[k];
                 PRINTF ("Transfer: %d | Size: %d \n", k, size);
 
-                errors[core_id] += test_idma_1D(size, ((core_id+sizes[k]) % 2), ext_addr, loc_addr);
+                errors[core_id] += test_idma_1D(core_id, size, ((core_id+sizes[k]) % 2), ext_addr, loc_addr);
             } 
         }
     #endif
