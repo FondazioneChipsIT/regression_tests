@@ -13,7 +13,7 @@ int test_idma_2D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
     volatile uint8_t *src_ptr, *dst_ptr;
 
     int error = 0;
-
+    int offset_2d;
     if (ext2loc == 1) {
 
         // L2 to L1 transfer
@@ -21,10 +21,13 @@ int test_idma_2D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
         dst_ptr = (uint8_t*) tcdm_addr;
 
         // Fill source region with test data
-        for (int i = 0; i < num_reps * src_stride; i++) {
-                src_ptr[i] = (uint8_t)(i & 0xFF);
+        offset_2d = 0;
+        for (int q = 0; q < num_reps; q++) {
+            for (int i = 0; i < length; i++) {
+                src_ptr[i+offset_2d] = (uint8_t)(i & 0xFF);
+            }
+            offset_2d += src_stride;
         }
-
         pulp_cl_idma_L2ToL1_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps);
     } else {
 
@@ -33,17 +36,17 @@ int test_idma_2D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
         dst_ptr = (uint8_t*) ext_addr;
 
         // Fill source region with test data
-        for (int i = 0; i < num_reps * src_stride; i++) {
-                src_ptr[i] = (uint8_t)(i & 0xFF);
+        offset_2d = 0;
+        for (int q = 0; q < num_reps; q++) {
+            for (int i = 0; i < length; i++) {
+                src_ptr[i+offset_2d] = (uint8_t)(i & 0xFF);
+            }
+            offset_2d += src_stride;
         }
-
         pulp_cl_idma_L1ToL2_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps);
     }
 
     plp_cl_dma_barrier();
-    #ifdef TEST_ALL_CORES
-        synch_barrier();
-    #endif
 
     // Check the results
     
@@ -53,11 +56,11 @@ int test_idma_2D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
         for (unsigned int i = 0; i < length; i++) {
             uint8_t expected = src_ptr[src_offset + i];
             uint8_t actual = dst_ptr[dst_offset + i];
-            
+
             if (expected != actual) {
                 error++;
                 if (core_id == 0) {
-                    PRINTF ("ERROR: expected[%d] @%8x = %8x vs actual[%d] @%8x = %8x \n", src_offset + i, &src_ptr[src_offset + i], dst_offset+1, expected, &dst_ptr[dst_offset + i], actual);
+                    PRINTF ("ERROR: expected[%d] @%8x = %8x vs actual[%d] @%8x = %8x \n", src_offset + i, &src_ptr[src_offset + i], expected, dst_offset+i, &dst_ptr[dst_offset + i], actual);
                 }
             }
 
@@ -78,24 +81,47 @@ int main () {
     ext_addr = (uint32_t)ext + core_id * CORE_SPACE;
     loc_addr = (uint32_t)loc + core_id * CORE_SPACE;
 
-    #ifdef TEST_ALL_CORES
-        // MULTI CORE MODE: all cores in parallel use the iDMA
+    #ifdef MULTI_CORE_P
+        // MULTI CORE PARALLEL MODE: each core uses the iDMA in a parallel manner
         if (core_id == 0) {
-            PRINTF ("Multi core testing \n");
+            PRINTF ("MULTI CORE PARALLEL MODE \n");
         }
         for (int k = 0; k < NB_TRANSFERS; k++) {
             size = transfer_params[k].size;
             length = transfer_params[k].length;
             src_stride = transfer_params[k].src_stride;
             dst_stride = transfer_params[k].dst_stride;
-
-            errors[core_id] += test_idma_2D(core_id, size, (core_id+size) % 2, ext_addr, loc_addr, length, src_stride, dst_stride, size/length);
+             if (core_id == 0) {
+                PRINTF ("Transfer: %d \n", k);
+                PRINTF ("Size: %d | Length: %d | Src_stride: %d | Dst_stride: %d | Num_reps: %d \n", size, length, src_stride, dst_stride, (size/length));
+            }
+            errors[core_id] += test_idma_2D(core_id, size, core_id % 2, ext_addr, loc_addr, length, src_stride, dst_stride, size/length);
             synch_barrier();
         }
+    #elif MULTI_CORE_S
+        // MULTI CORE SERIAL MODE: each core uses the iDMA in a serial manner
+        if (core_id == 0) {
+            PRINTF ("MULTI CORE SERIAL MODE \n");
+        }
+        for (int i = 0; i < 8; i++) {
+            if (core_id == i) {
+                for (int k = 0; k < NB_TRANSFERS; k++) {
+                    size = transfer_params[k].size;
+                    length = transfer_params[k].length;
+                    src_stride = transfer_params[k].src_stride;
+                    dst_stride = transfer_params[k].dst_stride;
+                    if (core_id == 0) {
+                        PRINTF ("Transfer: %d \n", k);
+                        PRINTF ("Size: %d | Length: %d | Src_stride: %d | Dst_stride: %d | Num_reps: %d \n", size, length, src_stride, dst_stride, (size/length));
+                    }
+                    errors[core_id] += test_idma_2D(core_id, size, core_id%2, ext_addr, loc_addr, length, src_stride, dst_stride, (size/length));
+                }
+            }
+       }
     #else
         // SINGLE CORE MODE: just core 0 uses the iDMA
         if (core_id == 0) {
-            PRINTF ("Single core testing \n");
+            PRINTF ("SINGLE CORE MODE \n");
             for (int k = 0; k < NB_TRANSFERS; k++) {
                 size = transfer_params[k].size;
                 length = transfer_params[k].length;
@@ -103,11 +129,11 @@ int main () {
                 dst_stride = transfer_params[k].dst_stride;
                 PRINTF ("Transfer: %d \n", k);
                 PRINTF ("Size: %d | Length: %d | Src_stride: %d | Dst_stride: %d | Num_reps: %d \n", size, length, src_stride, dst_stride, (size/length));
-                errors[0] += test_idma_2D(0, size, (core_id+size)%2, ext_addr, loc_addr, length, src_stride, dst_stride, (size/length));
+                errors[core_id] += test_idma_2D(core_id, size, 0, ext_addr, loc_addr, length, src_stride, dst_stride, (size/length));
+                errors[core_id] += test_idma_2D(core_id, size, 1, ext_addr, loc_addr, length, src_stride, dst_stride, (size/length));
             }
         }
     #endif
-
     if (core_id == 0) {
         for (int i = 0; i<8; i++) {
             if (errors[i] !=0) {

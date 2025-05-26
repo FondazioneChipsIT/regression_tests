@@ -11,7 +11,7 @@ int test_status = 0;
 
 int test_idma_3D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, uint32_t tcdm_addr, unsigned int length, unsigned int src_stride_2d, unsigned int dst_stride_2d, unsigned int num_reps, unsigned int src_stride_3d, unsigned int dst_stride_3d, unsigned int num_reps_3d) {
     volatile uint8_t *src_ptr, *dst_ptr;
-    unsigned int offset_3d;
+    unsigned int offset_3d, offset_2d;
 
     int error = 0;
 
@@ -22,11 +22,16 @@ int test_idma_3D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
         dst_ptr = (uint8_t*) tcdm_addr;
 
         // Fill source region with test data
+        offset_2d = 0;
         offset_3d = 0;
         for (int j = 0; j < num_reps_3d; j++) {
-            for (int i = 0; i < num_reps * src_stride_2d; i++) {
-                src_ptr[i+offset_3d] = (uint8_t)(i & 0xFF);
+            for (int q = 0; q < num_reps; q++) {
+                for (int i = 0; i < length; i++) {
+                    src_ptr[i+offset_2d+offset_3d] = (uint8_t)(i & 0xFF);
+                }
+                offset_2d += src_stride_2d;
             }
+            offset_2d = 0;
             offset_3d += (num_reps-1) * src_stride_2d + src_stride_3d;
         }
 
@@ -38,11 +43,16 @@ int test_idma_3D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
         dst_ptr = (uint8_t*) ext_addr;
 
         // Fill source region with test data
+        offset_2d = 0;
         offset_3d = 0;
         for (int j = 0; j < num_reps_3d; j++) {
-            for (int i = 0; i < num_reps * src_stride_2d; i++) {
-                src_ptr[i+offset_3d] = (uint8_t)(i & 0xFF);
+            for (int q = 0; q < num_reps; q++) {
+                for (int i = 0; i < length; i++) {
+                    src_ptr[i+offset_2d+offset_3d] = (uint8_t)(i & 0xFF);
+                }
+                offset_2d += src_stride_2d;
             }
+            offset_2d = 0;
             offset_3d += (num_reps-1) * src_stride_2d + src_stride_3d;
         }
 
@@ -50,36 +60,33 @@ int test_idma_3D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
     }
 
     plp_cl_dma_barrier();
-    #ifdef TEST_ALL_CORES
-        synch_barrier();
-    #endif
 
     // Check the results
-    unsigned int src_offset = 0;
-    unsigned int dst_offset = 0;
-    unsigned int src_reached = 0;
-    unsigned int dst_reached = 0;
+    int src_offset_2d = 0;
+    int dst_offset_2d = 0;
+    int src_offset_3d = 0;
+    int dst_offset_3d = 0;
 
     for (int rep_3d = 0; rep_3d < num_reps_3d; rep_3d ++) {
         for (unsigned int rep = 0; rep < num_reps; rep++) {
             for (unsigned int i = 0; i < length; i++) {
-                uint8_t expected = src_ptr[src_offset + i];
-                uint8_t actual   = dst_ptr[dst_offset + i];
+                uint8_t expected = src_ptr[src_offset_2d + src_offset_3d + i];
+                uint8_t actual   = dst_ptr[dst_offset_2d + dst_offset_3d + i];
 
                 if (expected != actual) {
                     if (core_id == 0) {
-                        PRINTF ("ERROR: expected @%8x[%d] = %8x vs actual @%8x[%d] = %8x \n", &src_ptr[src_offset + i], src_offset + i, expected, &dst_ptr[dst_offset + i], dst_offset + i, actual);
+                        PRINTF ("ERROR: expected @%8x[%d] = %8x vs actual @%8x[%d] = %8x \n", &src_ptr[src_offset_2d + src_offset_3d + i], src_offset_2d + src_offset_3d + i, expected, &dst_ptr[dst_offset_2d + dst_offset_3d + i], dst_offset_2d + dst_offset_3d + i, actual);
                     }
                     error++;
                 }
             }
-            if (rep < (num_reps-1)) {
-                src_offset += src_stride_2d;
-                dst_offset += dst_stride_2d;
-            }
+            src_offset_2d += src_stride_2d;
+            dst_offset_2d += dst_stride_2d;
         }
-        src_offset += src_stride_3d;
-        dst_offset += dst_stride_3d;
+        src_offset_2d = 0;
+        dst_offset_2d = 0;
+        src_offset_3d += (num_reps-1) * src_stride_2d + src_stride_3d;
+        dst_offset_3d += (num_reps-1) * dst_stride_2d + dst_stride_3d;
     }
 
     return error;
@@ -97,10 +104,10 @@ int main () {
     ext_addr = (uint32_t)ext + core_id * CORE_SPACE;
     loc_addr = (uint32_t)loc + core_id * CORE_SPACE;
 
-    #ifdef TEST_ALL_CORES
-        // MULTI CORE MODE: all cores in parallel use the iDMA
+    #ifdef MULTI_CORE_P
+        // MULTI CORE PARALLEL MODE: each core uses the iDMA in a parallel manner
         if (core_id == 0) {
-            PRINTF ("Multi core testing \n");
+            PRINTF ("MULTI CORE PARALLEL MODE \n");
         }
         for (int k = 0; k < NB_TRANSFERS; k++) {
             size = transfer_params[k].size;
@@ -111,11 +118,39 @@ int main () {
             dst_stride_3d = transfer_params[k].dst_stride_3d;
             num_reps_3d   = transfer_params[k].num_reps_3d;
 
+            if (core_id == 0) {
+                PRINTF ("Transfer: %d \n", k);
+                PRINTF ("Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d | Num_reps_2d: %d \n", size, length, src_stride_2d, dst_stride_2d, (size/length));
+                PRINTF ("Src_stride_3d: %d | Dst_stride_3d: %d | Num_reps_3d: %d \n", src_stride_3d, dst_stride_3d, num_reps_3d);
+            }
             errors[core_id] += test_idma_3D(core_id, size, (core_id%2), ext_addr, loc_addr, length, src_stride_2d, dst_stride_2d, (size/length), src_stride_3d, dst_stride_3d, num_reps_3d);
             synch_barrier();
         }
+    #elif MULTI_CORE_S
+        // MULTI CORE SERIAL MODE: each core uses the iDMA in a serial manner
+        if (core_id == 0) {
+            PRINTF ("MULTI CORE SERIAL MODE \n");
+        }
+        for (int i = 0; i < 8; i++) {
+            if (core_id == i) {
+                for (int k = 0; k < NB_TRANSFERS; k++) {
+                    size = transfer_params[k].size;
+                    length = transfer_params[k].length;
+                    src_stride_2d = transfer_params[k].src_stride_2d;
+                    dst_stride_2d = transfer_params[k].dst_stride_2d;
+                    src_stride_3d = transfer_params[k].src_stride_3d;
+                    dst_stride_3d = transfer_params[k].dst_stride_3d;
+                    num_reps_3d   = transfer_params[k].num_reps_3d;
+                    if (core_id == 0) {
+                        PRINTF ("Transfer: %d \n", k);
+                        PRINTF ("Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d | Num_reps_2d: %d \n", size, length, src_stride_2d, dst_stride_2d, (size/length));
+                        PRINTF ("Src_stride_3d: %d | Dst_stride_3d: %d | Num_reps_3d: %d \n", src_stride_3d, dst_stride_3d, num_reps_3d);
+                    }
+                    errors[core_id] += test_idma_3D(core_id, size, (core_id%2), ext_addr, loc_addr, length, src_stride_2d, dst_stride_2d, (size/length), src_stride_3d, dst_stride_3d, num_reps_3d);
+                }
+            }
+        }
     #else
-        // SINGLE CORE MODE: just core 0 uses the iDMA
         if (core_id == 0) {
             for (int k = 0; k < NB_TRANSFERS; k++) {
                 size = transfer_params[k].size;
@@ -128,7 +163,8 @@ int main () {
                 PRINTF ("Transfer: %d \n", k);
                 PRINTF ("Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d | Num_reps_2d: %d \n", size, length, src_stride_2d, dst_stride_2d, (size/length));
                 PRINTF ("Src_stride_3d: %d | Dst_stride_3d: %d | Num_reps_3d: %d \n", src_stride_3d, dst_stride_3d, num_reps_3d);
-                errors[core_id] += test_idma_3D(core_id, size, ((core_id+size) % 2), ext_addr, loc_addr, length, src_stride_2d, dst_stride_2d, (size/length), src_stride_3d, dst_stride_3d, num_reps_3d);
+                errors[core_id] += test_idma_3D(core_id, size, 0, ext_addr, loc_addr, length, src_stride_2d, dst_stride_2d, (size/length), src_stride_3d, dst_stride_3d, num_reps_3d);
+                errors[core_id] += test_idma_3D(core_id, size, 1, ext_addr, loc_addr, length, src_stride_2d, dst_stride_2d, (size/length), src_stride_3d, dst_stride_3d, num_reps_3d);
             }
         }
     #endif

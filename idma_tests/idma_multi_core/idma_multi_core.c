@@ -68,16 +68,34 @@ int main () {
     ext_addr = (uint32_t)ext + core_id * CORE_SPACE;
     loc_addr = (uint32_t)loc + core_id * CORE_SPACE;
 
-    #ifdef TEST_ALL_CORES
-        // MULTI CORE MODE: all cores in parallel use the iDMA
+    #ifdef MULTI_CORE_P
+        // MULTI CORE PARALLEL MODE: each core uses the iDMA in a parallel manner
         if (core_id == 0) {
-            PRINTF ("Using all cores \n");
+            PRINTF ("MULTI CORE PARALLEL MODE \n");
         }
         for (int k = 0; k < NB_TRANSFERS; k++) {
             size = sizes[k];
-
-            errors[core_id] += test_idma_1D(core_id, size, ((core_id+sizes[k]) % 2), ext_addr, loc_addr);
+            if (core_id == 0) {
+                PRINTF ("Transfer: %d | Size: %d \n", k, size);
+            }
+            errors[core_id] += test_idma_1D(core_id, size, (core_id % 2), ext_addr, loc_addr);
             synch_barrier();
+        }
+    #elif MULTI_CORE_S
+        // MULTI CORE SERIAL MODE: each core uses the iDMA in a serial manner
+        if (core_id == 0) {
+            PRINTF ("MULTI CORE SERIAL MODE \n");
+        }
+        for (int i = 0; i < 8; i++) {
+            if (core_id == i) {
+                for (int k = 0; k < NB_TRANSFERS; k++) {
+                    size = sizes[k];
+                    if (core_id == 0) {
+                        PRINTF ("Transfer: %d | Size: %d \n", k, size);
+                    }
+                    errors[core_id] += test_idma_1D(core_id, size, (core_id% 2), ext_addr, loc_addr);
+                }
+            }
         }
     #else
         if (core_id == 0) {
@@ -86,9 +104,9 @@ int main () {
             for (int k = 0; k < NB_TRANSFERS; k++) {
                 size = sizes[k];
                 PRINTF ("Transfer: %d | Size: %d \n", k, size);
-
-                errors[core_id] += test_idma_1D(core_id, size, ((core_id+sizes[k]) % 2), ext_addr, loc_addr);
-            } 
+                errors[core_id] += test_idma_1D(core_id, size, 0, ext_addr, loc_addr);
+                errors[core_id] += test_idma_1D(core_id, size, 1, ext_addr, loc_addr);
+            }
         }
     #endif
 
