@@ -1,33 +1,22 @@
 #include "idma_multi_core.h"
 
-#define MAX_BUFFER_SIZE 0x2200
+#define MAX_BUFFER_SIZE 0x1000
 #define CORE_SPACE 0x1000
 
 L2_DATA ext[MAX_BUFFER_SIZE];
 L1_DATA loc[MAX_BUFFER_SIZE];
+L1_DATA loc_dst[MAX_BUFFER_SIZE];
 
 int errors[8] = {0};
 int test_status = 0;
 
-int test_idma_1D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, uint32_t tcdm_addr) {
+int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t ext_addr, uint32_t tcdm_addr) {
     volatile uint8_t *src_ptr, *dst_ptr;
 
     int error = 0;
 
-    if (ext2loc == 1) {
-        // L2 to L1 transfer
-        src_ptr = (uint8_t*) ext_addr;
-        dst_ptr = (uint8_t*) tcdm_addr;
-
-        // Fill source region with test data
-        for (int i = 0; i < size; i++) {
-                src_ptr[i] = (uint8_t)(i & 0xFF);
-        }
-
-        pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
-
-    } else {
-        // L1 to L2 transfer
+    if (loc2loc == 1) {
+        // L1 to L1 transfer
         src_ptr = (uint8_t*) tcdm_addr;
         dst_ptr = (uint8_t*) ext_addr;
 
@@ -36,7 +25,31 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
             src_ptr[i] = (uint8_t)(i & 0xFF);
         }
 
-        pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+        pulp_cl_idma_L1ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+    } else {
+        if (ext2loc == 1) {
+            // L2 to L1 transfer
+            src_ptr = (uint8_t*) ext_addr;
+            dst_ptr = (uint8_t*) tcdm_addr;
+
+            // Fill source region with test data
+            for (int i = 0; i < size; i++) {
+                src_ptr[i] = (uint8_t)(i & 0xFF);
+            }
+
+            pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+        } else {
+            // L1 to L2 transfer
+            src_ptr = (uint8_t*) tcdm_addr;
+            dst_ptr = (uint8_t*) ext_addr;
+
+            // Fill source region with test data
+            for (int i = 0; i < size; i++) {
+                src_ptr[i] = (uint8_t)(i & 0xFF);
+            }
+
+            pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+        }
     }
 
     plp_cl_dma_barrier();
@@ -64,9 +77,15 @@ int main () {
     unsigned int size;
     uint32_t ext_addr;
     uint32_t loc_addr;
+    uint32_t loc_dst_addr;
 
-    ext_addr = (uint32_t)ext + core_id * CORE_SPACE;
-    loc_addr = (uint32_t)loc + core_id * CORE_SPACE;
+    ext_addr     = (uint32_t) ext + core_id * CORE_SPACE;
+    loc_addr     = (uint32_t) loc + core_id * CORE_SPACE;
+    loc_dst_addr = (uint32_t) loc_dst + core_id * CORE_SPACE;
+
+    if (core_id == 0) {
+        PRINTF ("L1 addr: %8x | L1 dst addr: %8x | L2 addr: %8x \n", loc_addr, loc_dst_addr, ext_addr);
+    }
 
     #ifdef MULTI_CORE_P
         // MULTI CORE PARALLEL MODE: each core uses the iDMA in a parallel manner
@@ -76,9 +95,11 @@ int main () {
         for (int k = 0; k < NB_TRANSFERS; k++) {
             size = sizes[k];
             if (core_id == 0) {
-                PRINTF ("Transfer: %d | Size: %d \n", k, size);
+                PRINTF ("Transfer: %d | Size: %8x \n", k, size);
             }
-            errors[core_id] += test_idma_1D(core_id, size, (core_id % 2), ext_addr, loc_addr);
+            // Each core tests in a direction + L1 <-> L1
+            errors[core_id] += test_idma_1D(core_id, size, (core_id % 2), 0, ext_addr, loc_addr);
+            errors[core_id] += test_idma_1D(core_id, size, 0, 1, loc_dst_addr, loc_addr);
             synch_barrier();
         }
     #elif MULTI_CORE_S
@@ -91,9 +112,11 @@ int main () {
                 for (int k = 0; k < NB_TRANSFERS; k++) {
                     size = sizes[k];
                     if (core_id == 0) {
-                        PRINTF ("Transfer: %d | Size: %d \n", k, size);
+                        PRINTF ("Transfer: %d | Size: %8x \n", k, size);
                     }
-                    errors[core_id] += test_idma_1D(core_id, size, (core_id% 2), ext_addr, loc_addr);
+                    // Each core tests in a direction + L1 <-> L1
+                    errors[core_id] += test_idma_1D(core_id, size, (core_id% 2), 0, ext_addr, loc_addr);
+                    errors[core_id] += test_idma_1D(core_id, size, 0, 1, loc_dst_addr, loc_addr);
                 }
             }
         }
@@ -103,9 +126,13 @@ int main () {
             PRINTF ("Just using Core 0 \n");
             for (int k = 0; k < NB_TRANSFERS; k++) {
                 size = sizes[k];
-                PRINTF ("Transfer: %d | Size: %d \n", k, size);
-                errors[core_id] += test_idma_1D(core_id, size, 0, ext_addr, loc_addr);
-                errors[core_id] += test_idma_1D(core_id, size, 1, ext_addr, loc_addr);
+                PRINTF ("Transfer: %d | Size: %8x \n", k, size);
+                PRINTF ("L1 to L2 \n");
+                errors[core_id] += test_idma_1D(core_id, size, 0, 0, ext_addr, loc_addr);
+                PRINTF ("L2 to L1 \n");
+                errors[core_id] += test_idma_1D(core_id, size, 1, 0, ext_addr, loc_addr);
+                PRINTF ("L1 to L1 \n");
+                errors[core_id] += test_idma_1D(core_id, size, 0, 1, loc_dst_addr, loc_addr);
             }
         }
     #endif
