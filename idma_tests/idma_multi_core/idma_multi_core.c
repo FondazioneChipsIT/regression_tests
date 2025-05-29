@@ -3,9 +3,9 @@
 #define MAX_BUFFER_SIZE 0x1000
 #define CORE_SPACE 0x1000
 
-L2_DATA ext[MAX_BUFFER_SIZE];
-L1_DATA loc[MAX_BUFFER_SIZE];
-L1_DATA loc_dst[MAX_BUFFER_SIZE];
+L2_DATA static uint8_t ext[MAX_BUFFER_SIZE];
+L1_DATA static uint8_t loc[MAX_BUFFER_SIZE];
+L1_DATA static uint8_t loc_dst[MAX_BUFFER_SIZE];
 
 int errors[8] = {0};
 int test_status = 0;

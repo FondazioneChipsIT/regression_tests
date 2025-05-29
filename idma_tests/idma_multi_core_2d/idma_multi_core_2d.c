@@ -5,33 +5,18 @@
 
 L2_DATA static uint8_t ext[MAX_BUFFER_SIZE];
 L1_DATA static uint8_t loc[MAX_BUFFER_SIZE];
+L1_DATA static uint8_t loc_dst[MAX_BUFFER_SIZE];
 
 int errors[8] = {0};
 int test_status = 0;
 
-int test_idma_2D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, uint32_t tcdm_addr, unsigned int length, unsigned int src_stride, unsigned int dst_stride, unsigned int num_reps) {
+int test_idma_2D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t ext_addr, uint32_t tcdm_addr, unsigned int length, unsigned int src_stride, unsigned int dst_stride, unsigned int num_reps) {
     volatile uint8_t *src_ptr, *dst_ptr;
 
     int error = 0;
     int offset_2d;
-    if (ext2loc == 1) {
-
-        // L2 to L1 transfer
-        src_ptr = (uint8_t*) ext_addr;
-        dst_ptr = (uint8_t*) tcdm_addr;
-
-        // Fill source region with test data
-        offset_2d = 0;
-        for (int q = 0; q < num_reps; q++) {
-            for (int i = 0; i < length; i++) {
-                src_ptr[i+offset_2d] = (uint8_t)(i & 0xFF);
-            }
-            offset_2d += src_stride;
-        }
-        pulp_cl_idma_L2ToL1_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps);
-    } else {
-
-        // L1 to L2 transfer
+    if (loc2loc == 1) {
+        // L1 to L1 transfer
         src_ptr = (uint8_t*) tcdm_addr;
         dst_ptr = (uint8_t*) ext_addr;
 
@@ -43,7 +28,40 @@ int test_idma_2D (int core_id, uint32_t size, int ext2loc, uint32_t ext_addr, ui
             }
             offset_2d += src_stride;
         }
-        pulp_cl_idma_L1ToL2_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps);
+
+        pulp_cl_idma_L1ToL1_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps);
+    } else {
+        if (ext2loc == 1) {
+
+            // L2 to L1 transfer
+            src_ptr = (uint8_t*) ext_addr;
+            dst_ptr = (uint8_t*) tcdm_addr;
+
+            // Fill source region with test data
+            offset_2d = 0;
+            for (int q = 0; q < num_reps; q++) {
+                for (int i = 0; i < length; i++) {
+                    src_ptr[i+offset_2d] = (uint8_t)(i & 0xFF);
+                }
+                offset_2d += src_stride;
+            }
+            pulp_cl_idma_L2ToL1_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps);
+        } else {
+
+            // L1 to L2 transfer
+            src_ptr = (uint8_t*) tcdm_addr;
+            dst_ptr = (uint8_t*) ext_addr;
+
+            // Fill source region with test data
+            offset_2d = 0;
+            for (int q = 0; q < num_reps; q++) {
+                for (int i = 0; i < length; i++) {
+                    src_ptr[i+offset_2d] = (uint8_t)(i & 0xFF);
+                }
+                offset_2d += src_stride;
+            }
+            pulp_cl_idma_L1ToL2_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps);
+        }
     }
 
     plp_cl_dma_barrier();
@@ -77,9 +95,15 @@ int main () {
     unsigned int size, length, src_stride, dst_stride;
     uint32_t ext_addr;
     uint32_t loc_addr;
+    uint32_t loc_dst_addr;
 
     ext_addr = (uint32_t)ext + core_id * CORE_SPACE;
     loc_addr = (uint32_t)loc + core_id * CORE_SPACE;
+    loc_dst_addr = (uint32_t) loc_dst + core_id * CORE_SPACE;
+
+    if (core_id == 0){
+        PRINTF ("loc_addr: %8x | loc_dst_addr: %8x \n", loc_addr, loc_dst_addr);
+    }
 
     #ifdef MULTI_CORE_P
         // MULTI CORE PARALLEL MODE: each core uses the iDMA in a parallel manner
@@ -95,7 +119,7 @@ int main () {
                 PRINTF ("Transfer: %d \n", k);
                 PRINTF ("Size: %d | Length: %d | Src_stride: %d | Dst_stride: %d | Num_reps: %d \n", size, length, src_stride, dst_stride, (size/length));
             }
-            errors[core_id] += test_idma_2D(core_id, size, core_id % 2, ext_addr, loc_addr, length, src_stride, dst_stride, size/length);
+            errors[core_id] += test_idma_2D(core_id, size, core_id % 2, 0, ext_addr, loc_addr, length, src_stride, dst_stride, size/length);
             synch_barrier();
         }
     #elif MULTI_CORE_S
@@ -114,7 +138,7 @@ int main () {
                         PRINTF ("Transfer: %d \n", k);
                         PRINTF ("Size: %d | Length: %d | Src_stride: %d | Dst_stride: %d | Num_reps: %d \n", size, length, src_stride, dst_stride, (size/length));
                     }
-                    errors[core_id] += test_idma_2D(core_id, size, core_id%2, ext_addr, loc_addr, length, src_stride, dst_stride, (size/length));
+                    errors[core_id] += test_idma_2D(core_id, size, core_id%2, 0, ext_addr, loc_addr, length, src_stride, dst_stride, (size/length));
                 }
             }
        }
@@ -129,8 +153,12 @@ int main () {
                 dst_stride = transfer_params[k].dst_stride;
                 PRINTF ("Transfer: %d \n", k);
                 PRINTF ("Size: %d | Length: %d | Src_stride: %d | Dst_stride: %d | Num_reps: %d \n", size, length, src_stride, dst_stride, (size/length));
-                errors[core_id] += test_idma_2D(core_id, size, 0, ext_addr, loc_addr, length, src_stride, dst_stride, (size/length));
-                errors[core_id] += test_idma_2D(core_id, size, 1, ext_addr, loc_addr, length, src_stride, dst_stride, (size/length));
+                PRINTF ("L1 to L2 \n");
+                errors[core_id] += test_idma_2D(core_id, size, 0, 0, ext_addr, loc_addr, length, src_stride, dst_stride, (size/length));
+                PRINTF ("L2 to L1 \n");
+                errors[core_id] += test_idma_2D(core_id, size, 1, 0, ext_addr, loc_addr, length, src_stride, dst_stride, (size/length));
+                PRINTF ("L1 to L1 \n");
+                errors[core_id] += test_idma_2D(core_id, size, 0, 1, loc_dst_addr, loc_addr, length, src_stride, dst_stride, (size/length));
             }
         }
     #endif
