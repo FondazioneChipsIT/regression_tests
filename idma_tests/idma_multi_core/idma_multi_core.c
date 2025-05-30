@@ -25,7 +25,7 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t
             src_ptr[i] = (uint8_t)(i & 0xFF);
         }
 
-        pulp_cl_idma_L1ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+        plp_cl_dma_wait_toL1(pulp_cl_idma_L1ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
     } else {
         if (ext2loc == 1) {
             // L2 to L1 transfer
@@ -37,7 +37,7 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t
                 src_ptr[i] = (uint8_t)(i & 0xFF);
             }
 
-            pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+            plp_cl_dma_wait_toL1(pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
         } else {
             // L1 to L2 transfer
             src_ptr = (uint8_t*) tcdm_addr;
@@ -48,11 +48,9 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t
                 src_ptr[i] = (uint8_t)(i & 0xFF);
             }
 
-            pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+            plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
         }
     }
-
-    plp_cl_dma_barrier();
 
     // Check the results
 

@@ -35,7 +35,7 @@ int test_idma_3D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t
             offset_3d += (num_reps-1) * src_stride_2d + src_stride_3d;
         }
 
-        pulp_cl_idma_L1ToL1_3d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride_2d, dst_stride_2d, num_reps, src_stride_3d, dst_stride_3d, num_reps_3d);
+        plp_cl_dma_wait_toL1(pulp_cl_idma_L1ToL1_3d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride_2d, dst_stride_2d, num_reps, src_stride_3d, dst_stride_3d, num_reps_3d));
 
     } else {
         if (ext2loc == 1) {
@@ -58,7 +58,7 @@ int test_idma_3D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t
                 offset_3d += (num_reps-1) * src_stride_2d + src_stride_3d;
             }
 
-            pulp_cl_idma_L2ToL1_3d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride_2d, dst_stride_2d, num_reps, src_stride_3d, dst_stride_3d, num_reps_3d);
+            plp_cl_dma_wait_toL1(pulp_cl_idma_L2ToL1_3d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride_2d, dst_stride_2d, num_reps, src_stride_3d, dst_stride_3d, num_reps_3d));
         } else {
 
             // L1 to L2 transfer
@@ -79,11 +79,9 @@ int test_idma_3D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t
                 offset_3d += (num_reps-1) * src_stride_2d + src_stride_3d;
             }
 
-            pulp_cl_idma_L1ToL2_3d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride_2d, dst_stride_2d, num_reps, src_stride_3d, dst_stride_3d, num_reps_3d);
+            plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2_3d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride_2d, dst_stride_2d, num_reps, src_stride_3d, dst_stride_3d, num_reps_3d));
         }
     }
-
-    plp_cl_dma_barrier();
 
     // Check the results
     int src_offset_2d = 0;

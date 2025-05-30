@@ -29,7 +29,7 @@ int test_idma_2D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t
             offset_2d += src_stride;
         }
 
-        pulp_cl_idma_L1ToL1_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps);
+        plp_cl_dma_wait_toL1(pulp_cl_idma_L1ToL1_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps));
     } else {
         if (ext2loc == 1) {
 
@@ -45,7 +45,7 @@ int test_idma_2D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t
                 }
                 offset_2d += src_stride;
             }
-            pulp_cl_idma_L2ToL1_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps);
+            plp_cl_dma_wait_toL1(pulp_cl_idma_L2ToL1_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps));
         } else {
 
             // L1 to L2 transfer
@@ -60,11 +60,9 @@ int test_idma_2D (int core_id, uint32_t size, int ext2loc, int loc2loc, uint32_t
                 }
                 offset_2d += src_stride;
             }
-            pulp_cl_idma_L1ToL2_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps);
+            plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps));
         }
     }
-
-    plp_cl_dma_barrier();
 
     // Check the results
     
