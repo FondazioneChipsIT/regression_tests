@@ -138,7 +138,7 @@ void free_allocated_memory () {
     synch_barrier();
     // Only Core 0 takes care of freeing the allocated memory, since it's the one
     // allocated it at the beginning of the test
-    if (core_id == 0) {
+    if (rt_core_id() == 0) {
         pi_l1_free(0, l1_addr, TOT_SIZE);
         pi_l1_free(0, l1_dst_addr, TOT_SIZE);
         pi_l2_free(l2_addr, TOT_SIZE);
