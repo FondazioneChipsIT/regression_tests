@@ -104,6 +104,14 @@ void allocate_mem_to_cores () {
     l1_dst_addr[core_id] = l1_dst_addr[0] + core_id * CORE_SPACE;
     l2_addr[core_id]     = l2_addr[0] + core_id * CORE_SPACE;
 
+    if (core_id == 0) {
+        for (int i = 0; i < 8; i++) {
+            PRINTF ("Core %d: l1_addr[%d] = %8x \n", core_id, i, l1_addr[i]);
+            PRINTF ("Core %d: l1_dst_addr[%d] = %8x \n", core_id, i, l1_dst_addr[i]);
+            PRINTF ("Core %d: l2_addr[%d] = %8x \n", core_id, i, l2_addr[i]);
+        }
+    }
+
     // The following synch_barrier is needed so that
     // no core can start executing until all address ranges have been assigned
     synch_barrier();
@@ -122,7 +130,7 @@ void free_allocated_memory () {
     }
 }
 
-int main () {
+int cluster_task () {
 
     int core_id = rt_core_id();
 
@@ -172,6 +180,7 @@ int main () {
                     errors[core_id] += test_idma_2D(core_id, transfer, 0, 1);
                 }
             }
+            synch_barrier();
         }
     #else
         // SINGLE CORE MODE: just core 0 uses the iDMA
@@ -206,4 +215,16 @@ int main () {
     free_allocated_memory();
 
     return test_status;
+}
+
+int main () {
+    int retval = 1;
+    #ifdef ARCHI_HAS_FC
+    PRINTF ("Fabric Controller calling cluster task \n");
+    if (rt_cluster_id() != 0)
+        return bench_cluster_forward(0);
+    #endif
+    retval = cluster_task();
+
+    return retval;
 }
