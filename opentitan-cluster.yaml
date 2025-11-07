@@ -1,0 +1,4 @@
+opentitan-cluster:
+  addressability:
+    path: ./opentitan-cluster/addressability
+    command: make clean all run
