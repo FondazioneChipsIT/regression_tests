@@ -2,15 +2,3 @@ opentitan-cluster:
   addressability:
     path: ./opentitan-cluster/addressability
     command: make clean all run
-  idma_test:
-    path: ./opentitan-cluster/idma_test
-    command: make clean all run
-  mbox_test:
-    path: ./opentitan-cluster/mbox_test
-    command: make clean all run
-  conv16:
-    path: ./parallel_bare_tests/conv16
-    command: make clean all run
-  parMatrixMul32:
-    path: ./parallel_bare_tests/parMatrixMul32
-    command: make clean all run

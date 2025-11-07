@@ -1,4 +1,4 @@
-/*
+g/*
  * Copyright (C) 2018 ETH Zurich and University of Bologna
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,8 @@
 int main()
 {
   printf("Hello !\n");
+
+  *(int*)(0xB0000000)=0xABBAABBA;
 
   return 0;
 }
