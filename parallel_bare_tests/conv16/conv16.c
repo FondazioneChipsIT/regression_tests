@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * Mantainer: Luca Valente, luca.valente2@unibo.it
  */
 /******************************************************************************
@@ -34,6 +34,7 @@
 #include <pulp.h>
 #include <stdint.h>
 #include "conv16.h"
+#include <stdio.h>
 
 __attribute__((section(".heapsram"))) int16_t g_W[FH*FW];
 __attribute__((section(".heapsram"))) int16_t g_x[IH*IW];
@@ -44,7 +45,7 @@ int main() {
 
    if (rt_cluster_id() != 0)
     return bench_cluster_forward(0);
- 
+
    int errors = 0;
    int sum = 0;
 
@@ -76,6 +77,12 @@ int main() {
    errors += test_multithread(&conv16_unrolled_ptr_5x5_four_coarsest, "4-threaded loop-unrolled pointer-optimized convolution (1 thread per output row)");
 
    synch_barrier();
+
+   // write errors to mailbox and ring doorbell for Ibex to check
+   if (core_id() == 0) {
+      pulp_write32(0x10404008, errors);
+      pulp_write32(0x10404020, 0x1);
+   }
 
    return errors;
 }
@@ -112,7 +119,7 @@ int test_singlethread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, in
       #ifndef PULP_SPI
       printf("%s, errors=%d, time=%d\n", str, errors, get_time(rt_cluster_id()));
       #endif
-      
+
    }
 
    return errors;
@@ -125,7 +132,7 @@ int test_multithread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, int
    if(rt_core_id() == 0) {
       load();
    }
-   
+
    synch_barrier();
 
    if(rt_core_id() == 0) {
@@ -154,7 +161,7 @@ int test_multithread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, int
       #ifndef PULP_SPI
       printf("%s, errors=%d, time=%d\n", str, errors, get_time(rt_cluster_id()));
       #endif
-      
+
    }
 
    return errors;
@@ -625,7 +632,7 @@ void conv16_unrolled_ptr_5x5_four_coarse(int16_t *__restrict__ W, int16_t *__res
    int16_t *y_ptr = y + a*oh*ow;
    int16_t *x_base = x + b*h*w + (fh-1)*w + (fw-1);
    int16_t *W_base = &W[((a*nif)+b)*fh*fw];
-   
+
    // synch_barrier();
 
    for (i=0; i<oh; i++) {
