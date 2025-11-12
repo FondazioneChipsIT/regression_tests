@@ -34,6 +34,7 @@
 #include <pulp.h>
 #include <stdint.h>
 #include "conv16.h"
+#include <stdio.h>
 
 __attribute__((section(".heapsram"))) int16_t g_W[FH*FW];
 __attribute__((section(".heapsram"))) int16_t g_x[IH*IW];
@@ -76,6 +77,12 @@ int main() {
    errors += test_multithread(&conv16_unrolled_ptr_5x5_four_coarsest, "4-threaded loop-unrolled pointer-optimized convolution (1 thread per output row)");
 
    synch_barrier();
+
+   // write errors to mailbox and ring doorbell for Ibex to check
+   if (core_id() == 0) {
+      pulp_write32(0x10404008, errors);
+      pulp_write32(0x10404020, 0x1);
+   }
 
    return errors;
 }
