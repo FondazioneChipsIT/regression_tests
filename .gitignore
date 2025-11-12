@@ -6,6 +6,8 @@
 !boot_code/crt0.S
 /simplified-runtime.xml
 *.log
+*.dis
+*.dump
 *.wlf
 modelsim.ini
 transcript
