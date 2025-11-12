@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * Mantainer: Luca Valente, luca.valente2@unibo.it
  */
 
 #include "pulp.h"
+#include <stdio.h>
 
 #include "parMatrixMul32_stimuli.h"
 
@@ -79,7 +80,7 @@ void check_matrix_mul(testresult_t *result, void (*start)(), void (*stop)()) {
   for(i = lb; i < ub; i++) {
     for(j = 0; j < SIZE; j++) {
       g_mC[i][j] = 0;
-  
+
       for(k = 0; k < SIZE; k++) {
         g_mC[i][j] += g_mA[i][k] * g_mB[k][j];
       }
@@ -92,7 +93,12 @@ void check_matrix_mul(testresult_t *result, void (*start)(), void (*stop)()) {
 
   if(core_id == 0) {
     result->errors = matrix_check();
+
+    // write errors to mailbox and ring doorbell for Ibex to check
+    pulp_write32(0x10404008, result->errors);
+    pulp_write32(0x10404020, 0x1);
   }
+
 }
 
 void check_matrix_mul_transpose(testresult_t *result, void (*start)(), void (*stop)()) {
