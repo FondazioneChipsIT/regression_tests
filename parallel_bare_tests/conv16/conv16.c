@@ -43,6 +43,10 @@ __attribute__((section(".heapsram"))) int16_t g_y_in[OH*OW];
 
 int main() {
 
+   if (rt_core_id() == 0) {
+      printf("TEST CONV16 - start!\n");
+   }
+
    if (rt_cluster_id() != 0)
     return bench_cluster_forward(0);
 
@@ -79,7 +83,15 @@ int main() {
    synch_barrier();
 
    // write errors to mailbox and ring doorbell for Ibex to check
-   if (core_id() == 0) {
+   if (rt_core_id() == 0) {
+
+      if(errors == 0){
+         printf("TEST PASSED!\n");
+      } else {
+         printf("TEST FAILED!\n");
+      }
+
+      printf("Writing to mailbox...\n");
       pulp_write32(0x10404008, errors);
       pulp_write32(0x10404020, 0x1);
    }
@@ -106,7 +118,7 @@ int test_singlethread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, in
       sum = checksum(g_y);
       if(sum != RIGHT_CHECKSUM) {
          #ifndef PULP_SPI
- 	 printf("wrong checksum, 0x%08x instead of 0x00072930\n", sum);
+ 	      printf("wrong checksum, 0x%08x instead of 0x00072930\n", sum);
          #endif
          #ifdef CHECK_ERROR
          errors = check(g_y);

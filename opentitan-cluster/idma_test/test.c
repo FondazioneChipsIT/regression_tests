@@ -18,6 +18,10 @@ int main() {
 
   synch_barrier();
 
+  if (rt_core_id() == 0) {
+    printf("IDMA TEST - start!\n");
+  }
+
   // Allocate memory regions in L1 and L2 for iDMA testing
   if (rt_core_id() == 0) {
         l1_addr[0]     = (uint32_t) pi_l1_malloc(0, SIZE);
@@ -37,10 +41,11 @@ int main() {
     }
 
     // copy from external L2 to cluster L1
+    printf("STARTING TRANSFER FROM L2 TO L1...\n");
     plp_cl_dma_wait_toL1(pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, transfer_size));
 
     for (int i=0; i < transfer_size; i++) {
-      uint8_t expected = src_ptr[i]; 
+      uint8_t expected = src_ptr[i];
       uint8_t actual   = dst_ptr[i];
 
       if (expected != actual) {
@@ -59,6 +64,7 @@ int main() {
     }
 
     // copy from cluster L1 to external L2
+    printf("STARTING TRANSFER FROM L1 TO L2...\n");
     plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, transfer_size));
 
     for (int i=0; i < transfer_size; i++) {
@@ -81,8 +87,16 @@ int main() {
   }
 
   if (rt_core_id() == 0) {
+
+    if(error == 0){
+      printf("TEST PASSED!\n");
+    } else {
+      printf("TEST FAILED!\n");
+    }
+
+    printf("Writing to mailbox...\n");
     pulp_write32(0x10404008, error);
-    // pulp_write32(0x10404020, 0x1);
+    pulp_write32(0x10404020, 0x1);
   }
 
   synch_barrier();
