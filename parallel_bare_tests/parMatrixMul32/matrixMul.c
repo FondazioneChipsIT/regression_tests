@@ -36,6 +36,10 @@ unsigned int num_cores;
 
 int main()
 {
+  if (rt_core_id() == 0) {
+    printf("TEST PAR MATRIX MUL 32 - start!\n");
+  }
+
   if (rt_cluster_id() != 0)
     return bench_cluster_forward(0);
 
@@ -94,7 +98,13 @@ void check_matrix_mul(testresult_t *result, void (*start)(), void (*stop)()) {
   if(core_id == 0) {
     result->errors = matrix_check();
 
-    // write errors to mailbox and ring doorbell for Ibex to check
+    if(result->errors == 0){
+      printf("TEST PASSED!\n");
+    } else {
+      printf("TEST FAILED!\n");
+    }
+
+    printf("Writing to mailbox...\n");
     pulp_write32(0x10404008, result->errors);
     pulp_write32(0x10404020, 0x1);
   }
