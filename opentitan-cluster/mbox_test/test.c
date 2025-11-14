@@ -13,6 +13,10 @@
 
 int main() {
 
+  if (rt_core_id() == 0) {
+    printf("MBOX TEST - start!\n");
+  }
+
   if(core_id() == 0) {
     pulp_write32(SHARED_ADDR, 0);
     pulp_write32(SHARED_ADDR, pulp_read32(SHARED_ADDR) + 1);
@@ -29,6 +33,7 @@ int main() {
   synch_barrier();
 
   if(core_id() == 0){
+    printf("Writing to mailbox...\n");
     pulp_write32(MboxAddrReg0, 0xBAADC0DE);
     pulp_write32(MboxAddrReg1, 0xBAADC0DE);
     pulp_write32(MboxAddrReg2, 0xBAADC0DE);
