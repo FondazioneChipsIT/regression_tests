@@ -55,7 +55,7 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc) {
     // Check the results
 
     for (int i=0; i < size; i++) {
-        uint8_t expected = src_ptr[i]; 
+        uint8_t expected = src_ptr[i];
         uint8_t actual   = dst_ptr[i];
 
         if (expected != actual) {
@@ -64,6 +64,18 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc) {
                 PRINTF ("Error: expected @%8x = %8x vs actual @%8x = %8x \n", expected, &src_ptr[i], actual, &dst_ptr[i]);
             }
         }
+    }
+
+    if(core_id == 0) {
+        if(error == 0){
+        printf("TEST PASSED!\n");
+        } else {
+        printf("TEST FAILED!\n");
+        }
+
+        printf("Writing to mailbox...\n");
+        pulp_write32(0x10404008, error);
+        pulp_write32(0x10404020, 0x1);
     }
 
     return error;
@@ -222,6 +234,11 @@ int cluster_task () {
 
 int main () {
     int retval = 1;
+
+    if (rt_core_id() == 0) {
+        printf("TEST IDMA MULTI CORE 1D - start!\n");
+    }
+
     #ifdef ARCHI_HAS_FC
     PRINTF ("Fabric Controller calling cluster task \n");
     if (rt_cluster_id() != 0)
