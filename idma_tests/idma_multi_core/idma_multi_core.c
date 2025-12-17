@@ -31,6 +31,7 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc) {
     // Fill source region with test data
     for (int i = 0; i < size; i++) {
         src_ptr[i] = (uint8_t)(i & 0xFF);
+        dst_ptr[i] = (uint8_t)((i-1)&0xFF);
     }
 
     if (loc2loc == 1) {

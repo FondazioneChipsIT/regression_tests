@@ -21,7 +21,7 @@ int test_idma_2D (int core_id, TransferParameters transfer, int ext2loc, int loc
     volatile uint8_t *src_ptr, *dst_ptr;
 
     int error = 0;
-    int offset_2d;
+    int src_offset_2d, dst_offset_2d;
 
     uint32_t src_stride = transfer.src_stride;
     uint32_t dst_stride = transfer.dst_stride;
@@ -45,9 +45,11 @@ int test_idma_2D (int core_id, TransferParameters transfer, int ext2loc, int loc
 
     // Fill source region with test data
     for (int q = 0; q < num_reps; q++) {
-        offset_2d = q * src_stride;
+        src_offset_2d = q * src_stride;
+        dst_offset_2d = q * dst_stride;
         for (int i = 0; i < length; i++) {
-            src_ptr[i+offset_2d] = (uint8_t)(i & 0xFF);
+            src_ptr[i+src_offset_2d] = (uint8_t)(i & 0xFF);
+            dst_ptr[i+dst_offset_2d] = (uint8_t)((i-1) & 0xFF);
         }
     }
 

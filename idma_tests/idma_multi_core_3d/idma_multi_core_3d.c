@@ -22,7 +22,10 @@ void print_transfer (TransferParameters transfer) {
 int test_idma_3D (int core_id, TransferParameters transfer, int ext2loc, int loc2loc) {
     volatile uint8_t *src_ptr, *dst_ptr;
     unsigned int offset_3d = 0;
-    unsigned int offset_2d = 0;
+    int src_offset_2d = 0;
+    int dst_offset_2d = 0;
+    int src_offset_3d = 0;
+    int dst_offset_3d = 0;
 
     int error = 0;
 
@@ -53,12 +56,16 @@ int test_idma_3D (int core_id, TransferParameters transfer, int ext2loc, int loc
     for (int j = 0; j < num_reps_3d; j++) {
         for (int q = 0; q < num_reps; q++) {
             for (int i = 0; i < length; i++) {
-                src_ptr[i+offset_2d+offset_3d] = (uint8_t)(i & 0xFF);
+                src_ptr[i+src_offset_2d+src_offset_3d] = (uint8_t)(i & 0xFF);
+                dst_ptr[i+dst_offset_2d+dst_offset_3d] = (uint8_t)((i-1) & 0xFF);
             }
-            offset_2d += src_stride_2d;
+            src_offset_2d += src_stride_2d;
+            dst_offset_2d += dst_stride_2d;
         }
-        offset_2d = 0;
-        offset_3d += (num_reps-1) * src_stride_2d + src_stride_3d;
+        src_offset_2d = 0;
+        dst_offset_2d = 0;
+        src_offset_3d += (num_reps-1) * src_stride_2d + src_stride_3d;
+        dst_offset_3d += (num_reps-1) * dst_stride_2d + dst_stride_3d;
     }
 
 
@@ -74,10 +81,10 @@ int test_idma_3D (int core_id, TransferParameters transfer, int ext2loc, int loc
     }
 
     // Check the results
-    int src_offset_2d = 0;
-    int dst_offset_2d = 0;
-    int src_offset_3d = 0;
-    int dst_offset_3d = 0;
+    src_offset_2d = 0;
+    dst_offset_2d = 0;
+    src_offset_3d = 0;
+    dst_offset_3d = 0;
 
     for (int rep_3d = 0; rep_3d < num_reps_3d; rep_3d ++) {
         for (unsigned int rep = 0; rep < num_reps; rep++) {
