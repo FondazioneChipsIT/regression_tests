@@ -1,8 +1,7 @@
-
 // Parameters are declared in this order:
 // size, length, src_stride_2d, dst_stride_2d, src_stride_3d, dst_stride_3d, num_reps_3d
 
-TransferParameters idma_presets[] = {
+transfer_3d idma_presets[] = {
 {1,   1,  1,  1,  1,  1, 1},
 {2,   8,  8,  8,  8,  8, 2},
 {3,   8,  8,  8,  8,  8, 4},

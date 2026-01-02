@@ -35,12 +35,22 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc) {
     }
 
     if (loc2loc == 1) {
+        reset_cycle_count();
+        start_cycle_count();
         plp_cl_dma_wait_toL1(pulp_cl_idma_L1ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
+        stop_cycle_count();
     } else if (ext2loc == 1) {
+        reset_cycle_count();
+        start_cycle_count();
         plp_cl_dma_wait_toL1(pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
+        stop_cycle_count();
     } else {
+        reset_cycle_count();
+        start_cycle_count();
         plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
+        stop_cycle_count();
     }
+    print_perf();
 
     // Check the results
 
@@ -118,20 +128,26 @@ int cluster_task () {
         if (core_id == 0) {
             PRINTF ("MULTI CORE PARALLEL MODE \n");
         }
-        for (int k = 0; k < TRANSFERS; k++) {
+        for (int k = 0; k < NB_TRANSFERS; k++) {
             #ifdef QUICK_MODE
-            size = idma_presets[k];
+            size = idma_presets[k].size_1d;
             #else
-            size = sizes[k];
+            size = params_1d[k].size_1d;
             #endif
-            if (core_id == 0){
-                PRINTF ("Size: %d \n", size);
-            }
             // L1 -> L2
+            if (core_id == 0){
+                PRINTF ("L1 -> L2 => Size: %d \n", size);
+            }
             errors[core_id] += test_idma_1D(core_id, size, 0, 0);
             // L2 -> L1
+            if (core_id == 0){
+                PRINTF ("L2 -> L1=> Size: %d \n", size);
+            }
             errors[core_id] += test_idma_1D(core_id, size, 1, 0);
             // L1 -> L1
+            if (core_id == 0){
+                PRINTF ("L1 -> L1 => Size: %d \n", size);
+            }
             errors[core_id] += test_idma_1D(core_id, size, 0, 1);
         }
         synch_barrier();
@@ -142,20 +158,26 @@ int cluster_task () {
         }
         for (int i = 0; i < 8; i++) {
             if (core_id == i) {
-                for (int k = 0; k < TRANSFERS; k++) {
+                for (int k = 0; k < NB_TRANSFERS; k++) {
                     #ifdef QUICK_MODE
-                    size = idma_presets[k];
+                    size = idma_presets[k].size_1d;
                     #else
-                    size = sizes[k];
+                    size = params_1d[k].size_1d;
                     #endif
-                    if (core_id == 0){
-                        PRINTF ("Size: %d \n", size);
-                    }
                     // L1 -> L2
+                    if (core_id == 0){
+                        PRINTF ("L1 -> L2 => Size: %d \n", size);
+                    }
                     errors[core_id] += test_idma_1D(core_id, size, 0, 0);
                     // L2 -> L1
+                    if (core_id == 0){
+                        PRINTF ("L2 -> L1=> Size: %d \n", size);
+                    }
                     errors[core_id] += test_idma_1D(core_id, size, 1, 0);
                     // L1 -> L1
+                    if (core_id == 0){
+                        PRINTF ("L1 -> L1 => Size: %d \n", size);
+                    }
                     errors[core_id] += test_idma_1D(core_id, size, 0, 1);
                 }
             }
@@ -165,18 +187,20 @@ int cluster_task () {
         if (core_id == 0) {
             // SINGLE CORE MODE: just core 0 uses the iDMA
             PRINTF ("SINGLE CORE MODE: CORE 0 \n");
-            for (int k = 0; k < TRANSFERS; k++) {
+            for (int k = 0; k < NB_TRANSFERS; k++) {
                 #ifdef QUICK_MODE
-                size = idma_presets[k];
+                size = idma_presets[k].size_1d;
                 #else
-                size = sizes[k];
+                size = params_1d[k].size_1d;
                 #endif
-                PRINTF ("Size: %d \n", size);
                 // L1 -> L2
+                PRINTF ("L1 -> L2 => Size: %d \n", size);
                 errors[core_id] += test_idma_1D(core_id, size, 0, 0);
                 // L2 -> L1
+                PRINTF ("L2 -> L1=> Size: %d \n", size);
                 errors[core_id] += test_idma_1D(core_id, size, 1, 0);
                 // L1 -> L1
+                PRINTF ("L1 -> L1 => Size: %d \n", size);
                 errors[core_id] += test_idma_1D(core_id, size, 0, 1);
             }
         }

@@ -6,6 +6,11 @@ ifdef VERBOSE
 PULP_CFLAGS += -DVERBOSE
 endif
 
+ifdef CYCLE_COUNT
+PULP_CFLAGS += -DCYCLE_COUNT
+PULP_CFLAGS += -DVERBOSE
+endif
+
 ifdef MULTI_CORE_P
 PULP_CFLAGS += -DMULTI_CORE_P
 endif
@@ -24,4 +29,4 @@ stackSize = 4096
 include $(PULP_SDK_HOME)/install/rules/pulp.mk
 
 stimuli:
-	python gen_stimuli_idma_3d.py
+	python ../gen_stimuli.py 3D

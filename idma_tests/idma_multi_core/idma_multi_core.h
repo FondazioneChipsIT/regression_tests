@@ -13,9 +13,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "idma_defines.h"
-#include "idma_parameters.h"
+#include "idma_def_1d.h"
 #include "idma_presets.h"
+#include "idma_param_1d.h"
 
 #ifndef _DMA_FRONTEND_REG_DEFS_
 #define _DMA_FRONTEND_REG_DEFS_
@@ -35,6 +35,19 @@ extern "C" {
 #else
     #define PRINTF(...)
 #endif
+
+#ifdef CYCLE_COUNT
+    static inline void start_cycle_count () { perf_start(); }
+    static inline void stop_cycle_count () { perf_stop(); }
+    static inline void reset_cycle_count () { perf_reset(); }
+    static inline void print_perf() { PRINTF ("Performances: \n"); perf_print_all(); }
+#else
+    static inline void start_cycle_count () { }
+    static inline void stop_cycle_count () { }
+    static inline void reset_cycle_count () { }
+    static inline void print_perf() { }
+#endif
+
 
 #ifdef QUICK_MODE
     #define TRANSFERS 12

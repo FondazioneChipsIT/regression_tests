@@ -9,23 +9,23 @@ uint32_t l1_addr[8] = {0};
 uint32_t l1_dst_addr[8] = {0};
 uint32_t l2_addr[8] = {0};
 
-void print_transfer (TransferParameters transfer) {
+void print_transfer (transfer_2d transfer) {
     if (rt_core_id() == 0) {
         PRINTF ("Transfer Parameters: \n");
-        PRINTF ("Size: %d | Length: %d \n", transfer.size, transfer.length);
-        PRINTF ("Src_stride_2d: %d | Dst_stride_2d: %d \n", transfer.src_stride, transfer.dst_stride);
+        PRINTF ("Size: %d | Length: %d \n", transfer.size_2d, transfer.length);
+        PRINTF ("Src_stride_2d: %d | Dst_stride_2d: %d \n", transfer.src_stride_2d, transfer.dst_stride_2d);
     }
 }
 
-int test_idma_2D (int core_id, TransferParameters transfer, int ext2loc, int loc2loc) {
+int test_idma_2D (int core_id, transfer_2d transfer, int ext2loc, int loc2loc) {
     volatile uint8_t *src_ptr, *dst_ptr;
 
     int error = 0;
     int src_offset_2d, dst_offset_2d;
 
-    uint32_t src_stride = transfer.src_stride;
-    uint32_t dst_stride = transfer.dst_stride;
-    uint32_t size = transfer.size;
+    uint32_t src_stride = transfer.src_stride_2d;
+    uint32_t dst_stride = transfer.dst_stride_2d;
+    uint32_t size = transfer.size_2d;
     uint32_t length = transfer.length;
     uint32_t num_reps = size/length;
 
@@ -54,12 +54,23 @@ int test_idma_2D (int core_id, TransferParameters transfer, int ext2loc, int loc
     }
 
     if (loc2loc == 1) {
+        reset_cycle_count();
+        start_cycle_count();
         plp_cl_dma_wait_toL1(pulp_cl_idma_L1ToL1_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps));
+        stop_cycle_count();
     } if (ext2loc == 1) {
+        reset_cycle_count();
+        start_cycle_count();
         plp_cl_dma_wait_toL1(pulp_cl_idma_L2ToL1_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps));
+        stop_cycle_count();
     } else {
+        reset_cycle_count();
+        start_cycle_count();
         plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps));
+        stop_cycle_count();
     }
+    print_perf();
+
 
     // Check the results
     
@@ -138,7 +149,7 @@ int cluster_task () {
 
     allocate_mem_to_cores();
 
-    TransferParameters transfer;
+    transfer_2d transfer;
 
     #ifdef MULTI_CORE_P
         // MULTI CORE PARALLEL MODE: each core uses the iDMA in a parallel manner
@@ -149,7 +160,7 @@ int cluster_task () {
             #ifdef QUICK_MODE
             transfer = idma_presets[k];
             #else
-            transfer = transfer_params[k];
+            transfer = params_2d[k];
             #endif
             print_transfer(transfer);
             // L1 -> L2
@@ -171,7 +182,7 @@ int cluster_task () {
                     #ifdef QUICK_MODE
                     transfer = idma_presets[k];
                     #else
-                    transfer = transfer_params[k];
+                    transfer = params_2d[k];
                     #endif
                     print_transfer(transfer);
                     // L1 -> L2
@@ -192,7 +203,7 @@ int cluster_task () {
                 #ifdef QUICK_MODE
                 transfer = idma_presets[k];
                 #else
-                transfer = transfer_params[k];
+                transfer = params_2d[k];
                 #endif
                 print_transfer(transfer);
                 // L1 -> L2
