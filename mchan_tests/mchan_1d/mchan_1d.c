@@ -30,7 +30,7 @@ int mchan_1d(unsigned int size, int core_id, int ext2loc) {
     printf ("Launching transfer with L2_addr: %8x | L1_addr: %8x | size: %d | ext2loc: %d \n", l2_addr[core_id], l1_addr[core_id], size, ext2loc);
     plp_mchan_wait(plp_mchan_memcpy(l2_addr[core_id], l1_addr[core_id], size, ext2loc));
     stop_cycle_count();
-    PRINTF ("This transfer took %d cycles \n", getcycles());
+
     // Check the results
 
     for (int i=0; i < size; i++) {

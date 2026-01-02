@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-#include "mchan_def_1d.h"
-#include "mchan_param_1d.h"
+#include "mchan_def_2d.h"
+#include "mchan_param_2d.h"
 
 #ifdef VERBOSE
     #define PRINTF(...) printf(__VA_ARGS__)
