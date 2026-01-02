@@ -33,4 +33,4 @@ stackSize = 4096
 include $(PULP_SDK_HOME)/install/rules/pulp.mk
 
 stimuli:
-	python gen_stimuli_idma.py
+	python ../gen_stimuli.py 2D
