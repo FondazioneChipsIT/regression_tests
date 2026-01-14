@@ -23,7 +23,10 @@ int test_idma_rx (int core_id, int size) {
 
     reset_cycle_count();
     start_cycle_count();
-    plp_cl_dma_wait_toL1(pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+    }
+    plp_cl_dma_barrier_toL1();
     stop_cycle_count();
 
     // Check the results
@@ -65,7 +68,10 @@ int test_idma_tx (int core_id, int size) {
 
     reset_cycle_count();
     start_cycle_count();
-    plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+    }
+    plp_cl_dma_barrier_toL2();
     stop_cycle_count();
 
     // Check the results
@@ -112,8 +118,10 @@ int test_idma_tx_rx (int core_id, int size) {
         dst_ptr_rx[i] = (uint8_t)((i-1)&0xFF);
     }
 
-    pulp_cl_idma_L1ToL2((unsigned int) src_ptr_tx, (unsigned int) dst_ptr_tx, size);
-    pulp_cl_idma_L2ToL1((unsigned int) src_ptr_rx, (unsigned int) dst_ptr_rx, size);
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        pulp_cl_idma_L1ToL2((unsigned int) src_ptr_tx, (unsigned int) dst_ptr_tx, size);
+        pulp_cl_idma_L2ToL1((unsigned int) src_ptr_rx, (unsigned int) dst_ptr_rx, size);
+    }
 
     plp_cl_dma_barrier_toL1();
     plp_cl_dma_barrier_toL2();
