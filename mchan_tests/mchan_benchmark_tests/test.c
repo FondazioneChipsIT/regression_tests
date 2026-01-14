@@ -23,7 +23,10 @@ int test_mchan_rx (int core_id, int size) {
 
     reset_cycle_count();
     start_cycle_count();
-    plp_mchan_wait(plp_mchan_memcpy(l2_addr[1], l1_addr[1], size, 1));
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        plp_mchan_memcpy(l2_addr[1], l1_addr[1], size, 1);
+    }
+    plp_mchan_barrier();
     stop_cycle_count();
 
     // Check the results
@@ -65,7 +68,10 @@ int test_mchan_tx (int core_id, int size) {
 
     reset_cycle_count();
     start_cycle_count();
-    plp_mchan_wait(plp_mchan_memcpy(l2_addr[0], l1_addr[0], size, 0));
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        plp_mchan_memcpy(l2_addr[0], l1_addr[0], size, 0);
+    }
+    plp_mchan_barrier();
     stop_cycle_count();
 
     // Check the results
@@ -112,8 +118,10 @@ int test_mchan_tx_rx (int core_id, int size) {
         dst_ptr_rx[i] = (uint8_t)((i-1)&0xFF);
     }
 
-    plp_mchan_memcpy(l2_addr[0], l1_addr[0], size, 0);
-    plp_mchan_memcpy(l2_addr[1], l1_addr[1], size, 1);
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        plp_mchan_memcpy(l2_addr[0], l1_addr[0], size, 0);
+        plp_mchan_memcpy(l2_addr[1], l1_addr[1], size, 1);
+    }
     
     plp_mchan_barrier();
     // Check the results
