@@ -152,11 +152,20 @@ int test_idma_tx_rx (int core_id, int size) {
 }
 
 // Tests an idle scenario
-int test_idma_idle (int core_id) {
+int test_idma_idle (int size) {
     // Here iDMA does nothing, we just wait.
-    int k = 0;
-    for (int i=0; i<64*1024; i++) {
-        k++;
+    volatile uint8_t *src_ptr, *dst_ptr;
+    // L1 to L2 transfer
+    src_ptr = (uint8_t*) l1_addr[0];
+    dst_ptr = (uint8_t*) l2_addr[0];
+
+    for (int i=0; i<size; i++) {
+        src_ptr[i] = (uint8_t)(i & 0xFF);
+    }
+
+    // Let the core do a transfer instead of the DMA
+    for (int i=0; i<size; i++) {
+        dst_ptr[i] = src_ptr[i];
     }
     return 0;
 }
@@ -218,7 +227,7 @@ int cluster_task () {
         errors += test_idma_tx_rx(core_id, size);
         #endif
         #ifdef IDLE
-        errors += test_idma_idle(core_id);
+        errors += test_idma_idle(size);
         #endif
     }
 
