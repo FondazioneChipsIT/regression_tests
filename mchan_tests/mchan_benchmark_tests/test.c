@@ -23,7 +23,10 @@ int test_mchan_rx (int core_id, int size) {
 
     reset_cycle_count();
     start_cycle_count();
-    plp_mchan_wait(plp_mchan_memcpy(l2_addr[1], l1_addr[1], size, 1));
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        plp_mchan_memcpy(l2_addr[1], l1_addr[1], size, 1);
+    }
+    plp_mchan_barrier();
     stop_cycle_count();
 
     // Check the results
@@ -65,7 +68,10 @@ int test_mchan_tx (int core_id, int size) {
 
     reset_cycle_count();
     start_cycle_count();
-    plp_mchan_wait(plp_mchan_memcpy(l2_addr[0], l1_addr[0], size, 0));
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        plp_mchan_memcpy(l2_addr[0], l1_addr[0], size, 0);
+    }
+    plp_mchan_barrier();
     stop_cycle_count();
 
     // Check the results
@@ -112,8 +118,10 @@ int test_mchan_tx_rx (int core_id, int size) {
         dst_ptr_rx[i] = (uint8_t)((i-1)&0xFF);
     }
 
-    plp_mchan_memcpy(l2_addr[0], l1_addr[0], size, 0);
-    plp_mchan_memcpy(l2_addr[1], l1_addr[1], size, 1);
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        plp_mchan_memcpy(l2_addr[0], l1_addr[0], size, 0);
+        plp_mchan_memcpy(l2_addr[1], l1_addr[1], size, 1);
+    }
     
     plp_mchan_barrier();
     // Check the results
@@ -142,11 +150,20 @@ int test_mchan_tx_rx (int core_id, int size) {
 }
 
 // Tests an idle scenario
-int test_mchan_idle (int core_id) {
+int test_mchan_idle (int size) {
     // Here MCHAN does nothing, we just wait.
-    int k = 0;
-    for (int i=0; i<64*1024; i++) {
-        k++;
+    volatile uint8_t *src_ptr, *dst_ptr;
+    // L1 to L2 transfer
+    src_ptr = (uint8_t*) l1_addr[0];
+    dst_ptr = (uint8_t*) l2_addr[0];
+
+    for (int i=0; i<size; i++) {
+        src_ptr[i] = (uint8_t)(i & 0xFF);
+    }
+
+    // Let the core do a transfer instead of the DMA
+    for (int i=0; i<size; i++) {
+        dst_ptr[i] = src_ptr[i];
     }
     return 0;
 }
@@ -208,7 +225,7 @@ int cluster_task () {
         errors += test_mchan_tx_rx(core_id, size);
         #endif
         #ifdef IDLE
-        errors += test_mchan_idle(core_id);
+        errors += test_mchan_idle(size);
         #endif
     }
 

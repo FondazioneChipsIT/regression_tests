@@ -23,7 +23,10 @@ int test_idma_rx (int core_id, int size) {
 
     reset_cycle_count();
     start_cycle_count();
-    plp_cl_dma_wait_toL1(pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+    }
+    plp_cl_dma_barrier_toL1();
     stop_cycle_count();
 
     // Check the results
@@ -65,7 +68,10 @@ int test_idma_tx (int core_id, int size) {
 
     reset_cycle_count();
     start_cycle_count();
-    plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size);
+    }
+    plp_cl_dma_barrier_toL2();
     stop_cycle_count();
 
     // Check the results
@@ -112,8 +118,10 @@ int test_idma_tx_rx (int core_id, int size) {
         dst_ptr_rx[i] = (uint8_t)((i-1)&0xFF);
     }
 
-    pulp_cl_idma_L1ToL2((unsigned int) src_ptr_tx, (unsigned int) dst_ptr_tx, size);
-    pulp_cl_idma_L2ToL1((unsigned int) src_ptr_rx, (unsigned int) dst_ptr_rx, size);
+    for (int i=0; i<TRANSFERS_QUEUE; i++) {
+        pulp_cl_idma_L1ToL2((unsigned int) src_ptr_tx, (unsigned int) dst_ptr_tx, size);
+        pulp_cl_idma_L2ToL1((unsigned int) src_ptr_rx, (unsigned int) dst_ptr_rx, size);
+    }
 
     plp_cl_dma_barrier_toL1();
     plp_cl_dma_barrier_toL2();
@@ -144,11 +152,20 @@ int test_idma_tx_rx (int core_id, int size) {
 }
 
 // Tests an idle scenario
-int test_idma_idle (int core_id) {
+int test_idma_idle (int size) {
     // Here iDMA does nothing, we just wait.
-    int k = 0;
-    for (int i=0; i<64*1024; i++) {
-        k++;
+    volatile uint8_t *src_ptr, *dst_ptr;
+    // L1 to L2 transfer
+    src_ptr = (uint8_t*) l1_addr[0];
+    dst_ptr = (uint8_t*) l2_addr[0];
+
+    for (int i=0; i<size; i++) {
+        src_ptr[i] = (uint8_t)(i & 0xFF);
+    }
+
+    // Let the core do a transfer instead of the DMA
+    for (int i=0; i<size; i++) {
+        dst_ptr[i] = src_ptr[i];
     }
     return 0;
 }
@@ -210,7 +227,7 @@ int cluster_task () {
         errors += test_idma_tx_rx(core_id, size);
         #endif
         #ifdef IDLE
-        errors += test_idma_idle(core_id);
+        errors += test_idma_idle(size);
         #endif
     }
 
