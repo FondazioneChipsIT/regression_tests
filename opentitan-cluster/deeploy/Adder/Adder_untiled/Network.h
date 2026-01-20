@@ -36,9 +36,7 @@ static void _Add_tiling_closure(void* _Add_tiling_closure_args){
     // Add (Name: Add, Op: Add)
     if (rt_core_id()==0) {
         for (uint32_t i=0;i<125;i++){
-            // printf ("Adding: DeeployNetwork_input_0[%d]: %d and DeeployNetwork_input_1[%d]: %d \n", i, DeeployNetwork_input_0[i], i, DeeployNetwork_input_1[i]);
             DeeployNetwork_output_0[i] = DeeployNetwork_input_0[i] + DeeployNetwork_input_1[i] + 0;
-            // printf ("DeeployNetwork_output_0[%d]: %d \n", i, DeeployNetwork_output_0[i]);
         }
     }
 
@@ -56,7 +54,6 @@ static void _Add_cluster_fork(void* _Add_cluster_fork_args){
 
     // _Add_tiling_closure CLOSURE CALL
     _Add_tiling_closure(&DeeployNetwork__Add_tiling_closure_args);
-    // synch_barrier(); --> We already enter this portion of code on CORE 0 --> no need for a barrier here
     // CLOSURE ARG WRITEBACK
 }
 
@@ -69,7 +66,7 @@ static void _Add_closure(void* _Add_closure_args){
     // CLOSURE FUNCTION CALL
     _Add_cluster_fork_args_t DeeployNetwork__Add_cluster_fork_args = (_Add_cluster_fork_args_t) {};
 
-    // pi_cl_team_fork(NUM_CORES, (void*)_Add_cluster_fork, &DeeployNetwork__Add_cluster_fork_args);
+    // pi_cl_team_fork(8, (void*)_Add_cluster_fork, &DeeployNetwork__Add_cluster_fork_args); --> Already executing on cluster cores
 
     _Add_cluster_fork(&DeeployNetwork__Add_cluster_fork_args);
 
@@ -98,15 +95,9 @@ void RunNetwork(){
 }
 
 void InitNetwork(){
-        
-   DeeployNetwork_input_0 = (int8_t *)pi_l2_malloc(sizeof(int8_t) * 125);
 
-  DeeployNetwork_input_1 = (int8_t *)pi_l2_malloc(sizeof(int8_t) * 125);
-
-  DeeployNetwork_output_0 = (int32_t *)pi_l2_malloc(sizeof(int32_t) * 125);
-
-  DeeployNetwork_inputs[0] = (void *)DeeployNetwork_input_0;
-  DeeployNetwork_inputs[1] = (void *)DeeployNetwork_input_1;
-  DeeployNetwork_outputs[0] = (void *)DeeployNetwork_output_0;
+    DeeployNetwork_inputs[0] = (void *)DeeployNetwork_input_0;
+    DeeployNetwork_inputs[1] = (void *)DeeployNetwork_input_1;
+    DeeployNetwork_outputs[0] = (void *)DeeployNetwork_output_0;
 }
     
