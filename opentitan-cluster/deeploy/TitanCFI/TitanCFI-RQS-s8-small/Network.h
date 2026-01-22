@@ -1,14 +1,15 @@
 // #include "DeeployBasicMath.h"
 // #include "DeeployPULPMath.h"
 #include "pulp.h"
-#include "pulp_nn_kernels.h"
-#include "pulp_nn_utils.h"
+// #include "pulp_nn_kernels.h"
+// #include "pulp_nn_utils.h"
 #include "stdint.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "testinputs.h"
 #include "testoutputs.h"
+#include "pulp_nn.h"
 
 int8_t *DeeployNetwork_MEMORYARENA_L1;
 int8_t *DeeployNetwork_MEMORYARENA_L2;
@@ -2740,6 +2741,8 @@ static void __MERGE_CONVRQ_PASS_0_tiling_closure(void *__MERGE_CONVRQ_PASS_0_til
 
   // PULP NN CONV
 
+    printf("PULP NN CONV IN __MERGE_CONVRQ_PASS_0_tiling_closure \n");
+
   pulp_nn_conv_u8_u8_i8(DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_0_data_in_ref, DeeployNetwork__MERGE_CONVRQ_PASS_0_buffer, NULL,
                         DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_0_data_out_ref, DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_0_weight_ref,
                         DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_0_mul_ref, DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_0_add_ref, 1, 7, 1,
@@ -2911,6 +2914,8 @@ static void __MERGE_CONVRQ_PASS_1_tiling_closure(void *__MERGE_CONVRQ_PASS_1_til
   // CLOSURE FUNCTION CALL
 
   // PULP NN CONV
+
+  printf ("PULP NN CONV IN __MERGE_CONVRQ_PASS_1_tiling_closure \n");
 
   pulp_nn_conv_u8_u8_i8(DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_1_data_in_ref, DeeployNetwork__MERGE_CONVRQ_PASS_1_buffer, NULL,
                         DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_1_data_out_ref, DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_1_weight_ref,
@@ -3086,6 +3091,8 @@ static void __MERGE_CONVRQ_PASS_2_tiling_closure(void *__MERGE_CONVRQ_PASS_2_til
 
   // PULP NN CONV
 
+  printf ("PULP NN CONV IN __MERGE_CONVRQ_PASS_2_tiling_closure \n");
+
   pulp_nn_conv_u8_u8_i8(DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2_data_in_ref, DeeployNetwork__MERGE_CONVRQ_PASS_2_buffer, NULL,
                         DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2_data_out_ref, DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2_weight_ref,
                         DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2_mul_ref, DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2_add_ref, 1, 8, 1,
@@ -3193,7 +3200,7 @@ static void __MERGE_CONVRQ_PASS_2_closure(void *__MERGE_CONVRQ_PASS_2_closure_ar
     __MERGE_CONVRQ_PASS_2_cluster_fork(&DeeployNetwork___MERGE_CONVRQ_PASS_2_cluster_fork_args);
 
     // Transfer output tiles
-
+    printf ("Starting iDMA transfer after __MERGE_CONVRQ_PASS_2_cluster_fork \n");
     pulp_idma_transfer_1d_and_wait(0, DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2__MERGE_CONVRQ_PASS_2_qconv2rqshiftout_tensor_pre_transposed_ref,
                                    DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2_data_out_ref, 1024);
 
@@ -3232,6 +3239,7 @@ static void __MERGE_CONVRQ_PASS_2_closure_L3(void *__MERGE_CONVRQ_PASS_2_closure
 
   // __MERGE_CONVRQ_PASS_2_closure CLOSURE CALL
   __MERGE_CONVRQ_PASS_2_closure(&DeeployNetwork___MERGE_CONVRQ_PASS_2_closure_args);
+  printf ("After __MERGE_CONVRQ_PASS_2_closure \n");
 
   // CLOSURE ARG WRITEBACK
 }
@@ -3252,6 +3260,8 @@ static void _maxpool_tiling_closure(void *_maxpool_tiling_closure_args) {
 
   // PULP NN MaxPool 1D
 
+    printf ("PULP NN MAXPOOL IN _maxpool_tiling_closure \n");
+
   pulp_nn_maxpool_u8(DeeployNetwork_TILING_CODEGEN_L1_maxpool_data_in_ref, DeeployNetwork_TILING_CODEGEN_L1_maxpool_data_out_ref, 1, 8, 128, 1, 1, 1, 8, 0, 0,
                      0, 0, 1, 8);
 
@@ -3264,6 +3274,7 @@ typedef struct {
 } _maxpool_cluster_fork_args_t;
 
 static void _maxpool_cluster_fork(void *_maxpool_cluster_fork_args) {
+    printf ("I'm in maxpool_cluster_fork \n");
   // CLOSURE ARG CAST
   _maxpool_cluster_fork_args_t *args = (_maxpool_cluster_fork_args_t *)_maxpool_cluster_fork_args;
 
@@ -3323,9 +3334,12 @@ static void _maxpool_closure(void *_maxpool_closure_args) {
                                        .DeeployNetwork_TILING_CODEGEN_L1_maxpool_data_out_ref = DeeployNetwork_TILING_CODEGEN_L1_maxpool_data_out_ref};
 
     // pi_cl_team_fork(NUM_CORES, (void *)_maxpool_cluster_fork, &DeeployNetwork__maxpool_cluster_fork_args);
+    printf ("Before calling maxpool cluster fork \n");
     _maxpool_cluster_fork(&DeeployNetwork__maxpool_cluster_fork_args);
 
     // Transfer output tiles
+
+    printf("Before calling iDMA after maxpool cluster fork \n");
 
     pulp_idma_transfer_1d_and_wait(0, DeeployNetwork_TILING_CODEGEN_L1_maxpool_maxpool_maxpoolout_tensor_pre_transposed_ref,
                                    DeeployNetwork_TILING_CODEGEN_L1_maxpool_data_out_ref, 128);
@@ -3580,6 +3594,7 @@ static void __MERGE_GEMM_MATMUL_RQ_PASS_0_tiling_closure(void *__MERGE_GEMM_MATM
       for (int k = 0; k < 3; k++) {
         asm volatile("nop" ::);
       }
+      printf ("PULP NN LINEAR IN __MERGE_GEMM_MATMUL_RQ_PASS_0_tiling_closure \n");
       pulp_nn_linear_u8_u8_i8(
           ref_DeeployNetwork_TILING_CODEGEN_L1__MERGE_GEMM_MATMUL_RQ_PASS_0_data_out_ref_DeeployNetwork_TILING_CODEGEN_L1__MERGE_GEMM_MATMUL_RQ_PASS_0_A_ref,
           NULL,
@@ -3814,7 +3829,7 @@ void RunNetwork() {
       .DeeployNetwork__MERGE_CONVRQ_PASS_2_qconv2rqshiftout_tensor_pre_transposed = DeeployNetwork__MERGE_CONVRQ_PASS_2_qconv2rqshiftout_tensor_pre_transposed,
       .DeeployNetwork_maxpool_maxpoolout_tensor_pre_transposed = DeeployNetwork_maxpool_maxpoolout_tensor_pre_transposed,
       .DeeployNetwork_TILING_CODEGEN_L1_maxpool_tileIdxPtr = DeeployNetwork_TILING_CODEGEN_L1_maxpool_tileIdxPtr};
-
+    printf ("Before calling _maxpool_closure_L3 \n");
   // _maxpool_closure_L3 CLOSURE CALL
   _maxpool_closure_L3(&DeeployNetwork__maxpool_closure_L3_args);
 
