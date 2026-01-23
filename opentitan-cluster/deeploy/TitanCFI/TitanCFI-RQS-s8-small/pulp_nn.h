@@ -620,7 +620,7 @@ void pulp_nn_conv_u8_u8_i8(
     pOutBuffer+=(extra_chunk * ((dim_out_x_r + ((1 - section) * flag_dim_out_x_odd)) * ch_out_r));
     pIm2Col = pIm2ColBase;
   }
-  // synch_barrier();
+  synch_barrier();
 }
 
 void __attribute__ ((noinline)) pulp_nn_maxpool_u8(
@@ -693,7 +693,7 @@ void __attribute__ ((noinline)) pulp_nn_maxpool_u8(
     }
   }
 
-  // synch_barrier();
+  synch_barrier();
   if (dim_im_out_y < NUM_CORES)
   {
     n_cores = dim_im_out_y;
@@ -742,7 +742,7 @@ void __attribute__ ((noinline)) pulp_nn_maxpool_u8(
       pulp_nn_compare_and_replace_if_larger_u8(target, row_start, dim_im_out_x * ch_im_in_r);
     }
   }
-  // synch_barrier();
+  synch_barrier();
 }
 
 void pulp_nn_linear_u8_u8_i8(
@@ -896,5 +896,5 @@ void pulp_nn_linear_u8_u8_i8(
           }
         }
     }
-    // synch_barrier();
+    synch_barrier();
 }
