@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include "testinputs.h"
 #include "testoutputs.h"
-#include "pulp_nn.h"
+#include "../../pulp_nn_runtime/pulp_nn.h"
 
 int8_t *DeeployNetwork_MEMORYARENA_L1;
 int8_t *DeeployNetwork_MEMORYARENA_L2;
