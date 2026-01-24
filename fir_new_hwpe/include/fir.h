@@ -90,33 +90,4 @@ static inline void fir_soft_clear() {
 }
 #define FIR_BUSYWAIT()              do {} while((*(int volatile *)(FIR_ADDR_BASE + FIR_STATUS)) != 0)
 
-int fir_compare_int(uint32_t *actual_y, uint32_t *golden_y, int len) {
-  uint32_t actual_word = 0;
-  uint32_t golden_word = 0;
-  uint32_t actual = 0;
-  uint32_t golden = 0;
-
-  int errors = 0;
-  int non_zero_values = 0;
-
-  int max_value_saturated = 0x80; // FIXME
-
-  for (int i=0; i<len; i++) {
-    actual_word = *(actual_y+i);
-    golden_word = *(golden_y+i);
-
-    int error = (int) (actual_word != golden_word);
-    errors += (int) (actual_word != golden_word);
-
-#ifndef NVERBOSE
-    if(error) {
-      if(errors==1) printf("  golden     <- actual     @ address    @ index\n");
-      printf("  0x%08x <- 0x%08x @ 0x%08x @ 0x%08x\n", golden_word, actual_word, (actual_y+i), i*4);
-    }
-#endif /* NVERBOSE */
-    non_zero_values += (int) (actual_word != 0 && actual_word != max_value_saturated);
-  }
-  return errors;
-}
-
 #endif /* __HAL_FIR_H__ */
