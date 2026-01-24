@@ -39,6 +39,7 @@ const char* get_testname() {
 
 void test_setup() {
   for (int i=0; i<NB_TAPS-1; i++) {
+    asm volatile("" ::: "memory");
     pad_input[i] = 0;
   }
   for (int i=NB_TAPS-1; i<NB_SAMPLES+NB_TAPS-1; i++) {
