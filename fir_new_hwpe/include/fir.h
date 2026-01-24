@@ -22,6 +22,9 @@
 #ifndef __HAL_FIR_H__
 #define __HAL_FIR_H__
 
+void fir16(const int16_t *arr, const int16_t *coeff, int16_t *output,
+           unsigned arr_len, unsigned coeff_len, unsigned right_shift);
+
 /* REGISTER MAP */
 #define ARCHI_CL_EVT_ACC0 0
 #define ARCHI_CL_EVT_ACC1 1
