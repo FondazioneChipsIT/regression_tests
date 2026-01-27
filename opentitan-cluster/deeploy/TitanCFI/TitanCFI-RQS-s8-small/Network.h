@@ -1,15 +1,22 @@
-// #include "DeeployBasicMath.h"
-// #include "DeeployPULPMath.h"
+
+#include "XpulpV2/32bit/include/pulp_nn_utils.h"
+#include "XpulpV2/32bit/include/pulp_nn_kernels.h"
+
 #include "pulp.h"
-// #include "pulp_nn_kernels.h"
-// #include "pulp_nn_utils.h"
+
 #include "stdint.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "testinputs.h"
 #include "testoutputs.h"
-#include "../../pulp_nn_runtime/pulp_nn.h"
+
+// Define it here so that pulp-nn-mixed does not complain
+
+unsigned int runtime_core_id(void)
+{
+    return hal_core_id();
+}
 
 int8_t *DeeployNetwork_MEMORYARENA_L1;
 int8_t *DeeployNetwork_MEMORYARENA_L2;
@@ -22,7 +29,6 @@ static const uint32_t DeeployNetwork_num_outputs = 1;
 static const uint32_t DeeployNetwork_inputs_bytes[1] = {8};
 static const uint32_t DeeployNetwork_outputs_bytes[1] = {2};
 #define OUTPUT_TYPE uint8_t
-#define NUM_CORES 8
 
 static PI_L2 int8_t DeeployNetwork_qconv0w_tensor[192] = {
     49, 50,   -39, 56,   -28, 4,   -56, 38,  61, -68, 68,  10,  28,  -7,  16,  -28,  32,  -2,  -41,  31,   -58, -18, -34,  57,  -24, -13, 4,   -37,
@@ -2560,7 +2566,7 @@ __attribute__((noinline)) static void __MERGE_CONVRQ_PASS_0_unsqueezeout_tensor_
 
   // Transpose [1, 1, 8] -> [1, 8, 1] (Name: _MERGE_CONVRQ_PASS_0_unsqueezeout_tensor_transpose, Op: Transpose)
 
-  const uint32_t coreId = rt_core_id();
+  const uint32_t coreId = hal_core_id();
 
   uint16_t dimLen_0 = 1;
 
@@ -2570,8 +2576,8 @@ __attribute__((noinline)) static void __MERGE_CONVRQ_PASS_0_unsqueezeout_tensor_
 
   for (uint32_t i_0 = 0; i_0 < dimLen_0; i_0++) {
 
-    const uint32_t baseChunk = dimLen_2 / NUM_CORES;
-    const uint32_t leftover = dimLen_2 - baseChunk * NUM_CORES;
+    const uint32_t baseChunk = dimLen_2 / ARCHI_CLUSTER_NB_PE;
+    const uint32_t leftover = dimLen_2 - baseChunk * ARCHI_CLUSTER_NB_PE;
     const uint32_t offset = baseChunk * coreId + (coreId < leftover ? coreId : leftover);
     const uint32_t chunk = coreId < leftover ? baseChunk + 1 : baseChunk;
     for (uint32_t i_2 = offset; i_2 < offset + chunk; i_2++) {
@@ -2843,7 +2849,6 @@ static void __MERGE_CONVRQ_PASS_0_closure(void *__MERGE_CONVRQ_PASS_0_closure_ar
         .DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_0_add_ref = DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_0_add_ref,
         .DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_0_data_out_ref = DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_0_data_out_ref};
 
-    // pi_cl_team_fork(NUM_CORES, (void *)__MERGE_CONVRQ_PASS_0_cluster_fork, &DeeployNetwork___MERGE_CONVRQ_PASS_0_cluster_fork_args);
     __MERGE_CONVRQ_PASS_0_cluster_fork(&DeeployNetwork___MERGE_CONVRQ_PASS_0_cluster_fork_args);
 
     // Transfer output tiles
@@ -3016,7 +3021,6 @@ static void __MERGE_CONVRQ_PASS_1_closure(void *__MERGE_CONVRQ_PASS_1_closure_ar
         .DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_1_add_ref = DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_1_add_ref,
         .DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_1_data_out_ref = DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_1_data_out_ref};
 
-    // pi_cl_team_fork(NUM_CORES, (void *)__MERGE_CONVRQ_PASS_1_cluster_fork, &DeeployNetwork___MERGE_CONVRQ_PASS_1_cluster_fork_args);
     __MERGE_CONVRQ_PASS_1_cluster_fork(&DeeployNetwork___MERGE_CONVRQ_PASS_1_cluster_fork_args);
 
     // Transfer output tiles
@@ -3190,7 +3194,6 @@ static void __MERGE_CONVRQ_PASS_2_closure(void *__MERGE_CONVRQ_PASS_2_closure_ar
         .DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2_add_ref = DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2_add_ref,
         .DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2_data_out_ref = DeeployNetwork_TILING_CODEGEN_L1__MERGE_CONVRQ_PASS_2_data_out_ref};
 
-    // pi_cl_team_fork(NUM_CORES, (void *)__MERGE_CONVRQ_PASS_2_cluster_fork, &DeeployNetwork___MERGE_CONVRQ_PASS_2_cluster_fork_args);
     __MERGE_CONVRQ_PASS_2_cluster_fork(&DeeployNetwork___MERGE_CONVRQ_PASS_2_cluster_fork_args);
 
     // Transfer output tiles
@@ -3323,8 +3326,6 @@ static void _maxpool_closure(void *_maxpool_closure_args) {
         (_maxpool_cluster_fork_args_t){.DeeployNetwork_TILING_CODEGEN_L1_maxpool_data_in_ref = DeeployNetwork_TILING_CODEGEN_L1_maxpool_data_in_ref,
                                        .DeeployNetwork_TILING_CODEGEN_L1_maxpool_data_out_ref = DeeployNetwork_TILING_CODEGEN_L1_maxpool_data_out_ref};
 
-    // pi_cl_team_fork(NUM_CORES, (void *)_maxpool_cluster_fork, &DeeployNetwork__maxpool_cluster_fork_args);
-
     _maxpool_cluster_fork(&DeeployNetwork__maxpool_cluster_fork_args);
 
     // Transfer output tiles
@@ -3389,7 +3390,7 @@ __attribute__((noinline)) static void _maxpool_maxpoolout_tensor_pre_transpose_t
 
   // Transpose [1, 1, 128] -> [1, 128, 1] (Name: maxpool_maxpoolout_tensor_pre_transpose, Op: Transpose)
 
-  const uint32_t coreId = rt_core_id();
+  const uint32_t coreId = hal_core_id();
 
   uint16_t dimLen_0 = 1;
 
@@ -3399,8 +3400,8 @@ __attribute__((noinline)) static void _maxpool_maxpoolout_tensor_pre_transpose_t
 
   for (uint32_t i_0 = 0; i_0 < dimLen_0; i_0++) {
 
-    const uint32_t baseChunk = dimLen_2 / NUM_CORES;
-    const uint32_t leftover = dimLen_2 - baseChunk * NUM_CORES;
+    const uint32_t baseChunk = dimLen_2 / ARCHI_CLUSTER_NB_PE;
+    const uint32_t leftover = dimLen_2 - baseChunk * ARCHI_CLUSTER_NB_PE;
     const uint32_t offset = baseChunk * coreId + (coreId < leftover ? coreId : leftover);
     const uint32_t chunk = coreId < leftover ? baseChunk + 1 : baseChunk;
     for (uint32_t i_2 = offset; i_2 < offset + chunk; i_2++) {
@@ -3492,8 +3493,6 @@ static void _maxpool_maxpoolout_tensor_pre_transpose_closure(void *_maxpool_maxp
             .DeeployNetwork_TILING_CODEGEN_L1_maxpool_maxpoolout_tensor_pre_transpose_data_out_ref =
                 DeeployNetwork_TILING_CODEGEN_L1_maxpool_maxpoolout_tensor_pre_transpose_data_out_ref};
 
-    // pi_cl_team_fork(NUM_CORES, (void *)_maxpool_maxpoolout_tensor_pre_transpose_cluster_fork,
-    //                 &DeeployNetwork__maxpool_maxpoolout_tensor_pre_transpose_cluster_fork_args);
     _maxpool_maxpoolout_tensor_pre_transpose_cluster_fork(&DeeployNetwork__maxpool_maxpoolout_tensor_pre_transpose_cluster_fork_args);
 
     // Transfer output tiles
@@ -3695,7 +3694,6 @@ static void __MERGE_GEMM_MATMUL_RQ_PASS_0_closure(void *__MERGE_GEMM_MATMUL_RQ_P
             .DeeployNetwork_TILING_CODEGEN_L1__MERGE_GEMM_MATMUL_RQ_PASS_0_data_out_ref =
                 DeeployNetwork_TILING_CODEGEN_L1__MERGE_GEMM_MATMUL_RQ_PASS_0_data_out_ref};
 
-    // pi_cl_team_fork(NUM_CORES, (void *)__MERGE_GEMM_MATMUL_RQ_PASS_0_cluster_fork, &DeeployNetwork___MERGE_GEMM_MATMUL_RQ_PASS_0_cluster_fork_args);
     __MERGE_GEMM_MATMUL_RQ_PASS_0_cluster_fork(&DeeployNetwork___MERGE_GEMM_MATMUL_RQ_PASS_0_cluster_fork_args);
 
     // Transfer output tiles

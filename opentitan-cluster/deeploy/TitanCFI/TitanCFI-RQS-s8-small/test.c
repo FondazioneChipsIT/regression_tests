@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "pulp.h"
 #include "stdint.h"
 #include "Network.h"
 
