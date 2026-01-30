@@ -10,8 +10,9 @@ int main() {
     tot_tested = 0;
 
     if (rt_core_id() == 0) {
-        printf ("Starting Deeploy test \n");
-        printf ("Initnetwork \n");
+        printf ("TITANCFI-RQS-S8 small TEST STARTING \n");
+        printf ("INIT NETWORK \n");
+
         InitNetwork();
 
         for (uint32_t buf = 0; buf < DeeployNetwork_num_inputs; buf++) {
@@ -22,10 +23,13 @@ int main() {
     }
 
     synch_barrier();
+
     if (rt_core_id() == 0) {
-        printf ("RunNetwork \n");
+        printf ("RUN NETWORK \n");
     }
+
     RunNetwork();
+
     synch_barrier();
 
     if (rt_core_id() == 0) {
@@ -36,7 +40,8 @@ int main() {
         }
 
         tot_err = tot_tested;
-        printf ("Tot err is initialized to %d \n", tot_err);
+        printf ("Results to be tested are %d | Error count initialized to %d \n", tot_tested, tot_err);
+
         for (uint32_t buf = 0; buf < DeeployNetwork_num_outputs; buf++) {
 
             if ((uint32_t)DeeployNetwork_outputs[buf] < 0x1000000) {

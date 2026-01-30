@@ -1,10 +1,9 @@
 PULP_APP = test
 
-PULP_APP_FC_SRCS = test.c
+PULP_APP_SRCS ?= Network.c testinputs.c testoutputs.c test.c
 
-PULP_CFLAGS += -O3 -g3
-PULP_CFLAGS += -mno-memcpy
+PULP_CFLAGS += -O3 -g
 
 XLEN:=32
 
-include $(PULP_SDK_HOME)/install/rules/pulp_rt.mk
+include $(PULP_SDK_HOME)/install/rules/pulp.mk
