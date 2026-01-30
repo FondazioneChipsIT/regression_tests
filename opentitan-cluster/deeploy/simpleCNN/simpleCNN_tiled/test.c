@@ -6,7 +6,7 @@ int main() {
     tot_tested = 0;
 
     if (rt_core_id() == 0) {
-        printf ("ADDER TILED TEST STARTING \n");
+        printf ("SIMPLECNN TILED TEST STARTING \n");
         printf ("INIT NETWORK \n");
 
         InitNetwork();
@@ -16,14 +16,23 @@ int main() {
                 memcpy(DeeployNetwork_inputs[buf], testInputVector[buf], DeeployNetwork_inputs_bytes[buf]);
             }
         }
+    }
 
+    synch_barrier();
+
+    if (rt_core_id() == 0) {
         printf ("RUN NETWORK \n");
-        RunNetwork();
+    }
 
+    RunNetwork();
+
+    synch_barrier();
+
+    if (rt_core_id() == 0) {
         void *compbuf;
 
         for (uint32_t buf = 0; buf < DeeployNetwork_num_outputs; buf++) {
-            tot_tested += DeeployNetwork_outputs_bytes[buf] / sizeof(int32_t);
+            tot_tested += DeeployNetwork_outputs_bytes[buf] / sizeof(OUTPUT_TYPE);
         }
 
         tot_err = tot_tested;
@@ -38,11 +47,11 @@ int main() {
                 compbuf = DeeployNetwork_outputs[buf];
             }
 
-            for (uint32_t i = 0; i < DeeployNetwork_outputs_bytes[buf] / sizeof(int32_t); i++) {
-                int32_t expected = ((int32_t *)testOutputVector[buf])[i];
-                int32_t actual = ((int32_t *)compbuf)[i];
+            for (uint32_t i = 0; i < DeeployNetwork_outputs_bytes[buf] / sizeof(OUTPUT_TYPE); i++) {
+                OUTPUT_TYPE expected = ((OUTPUT_TYPE *)testOutputVector[buf])[i];
+                OUTPUT_TYPE actual = ((OUTPUT_TYPE *)compbuf)[i];
                 int32_t error = expected - actual;
-                int32_t diff = (int32_t)(error < 0 ? -error : error);
+                OUTPUT_TYPE diff = (OUTPUT_TYPE)(error < 0 ? -error : error);
 
                 if (diff) {
                     printf ("Difference found \n");

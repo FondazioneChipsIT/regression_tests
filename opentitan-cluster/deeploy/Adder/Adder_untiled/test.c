@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <stdint.h>
-#include "pulp.h"
 #include "Network.h"
 
 int main() {
@@ -11,22 +6,23 @@ int main() {
     tot_tested = 0;
 
     if (rt_core_id() == 0) {
-        printf ("Core number is %d \n", get_core_num());
-        printf ("Starting Deeploy test \n");
-        printf ("Before Initnetwork \n");
+        printf ("ADDER UNTILED TEST STARTING \n");
+
         DeeployNetwork_input_0 = (int8_t *)pi_l2_malloc(sizeof(int8_t) * 125);
         DeeployNetwork_input_1 = (int8_t *)pi_l2_malloc(sizeof(int8_t) * 125);
         DeeployNetwork_output_0 = (int32_t *)pi_l2_malloc(sizeof(int32_t) * 125);
+
+        printf ("INIT NETWORK \n");
         InitNetwork();
-        printf ("After Initnetwork \n");
+
         for (uint32_t buf = 0; buf < DeeployNetwork_num_inputs; buf++) {
             if ((uint32_t)DeeployNetwork_inputs[buf] >= 0x10000000) {
                 memcpy(DeeployNetwork_inputs[buf], testInputVector[buf], DeeployNetwork_inputs_bytes[buf]);
             }
         }
-        printf ("Before RunNetwork \n");
+
+        printf ("RUN NETWORK \n");
         RunNetwork();
-        printf ("After RunNetwork \n");
 
         void *compbuf;
 
@@ -34,9 +30,9 @@ int main() {
             tot_tested += DeeployNetwork_outputs_bytes[buf] / sizeof(int32_t);
         }
         tot_err = tot_tested;
-        printf ("Tot err is %d \n", tot_err);
+        printf ("Results to be tested are %d | Error count initialized to %d \n", tot_tested, tot_err);
+
         for (uint32_t buf = 0; buf < DeeployNetwork_num_outputs; buf++) {
-            tot_tested += DeeployNetwork_outputs_bytes[buf] / sizeof(int32_t);
 
             if ((uint32_t)DeeployNetwork_outputs[buf] < 0x1000000) {
                 compbuf = pi_l2_malloc((int)DeeployNetwork_outputs_bytes[buf]);
