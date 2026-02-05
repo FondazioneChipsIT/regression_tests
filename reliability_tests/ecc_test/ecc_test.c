@@ -65,5 +65,10 @@ int main() {
 
   printf("mismatch_cnt: %d, fix_cnt: %d, uncorrectable_cnt: %d\n", mismatch_cnt, fix_cnt, uncorrectable_cnt);
 
+  if (get_core_id() == 0){
+    pulp_write32(0x10404008, error != 0 && uncorrectable_cnt == 0);
+    pulp_write32(0x10404020, 0x1);
+  }
+
   return (error != 0) && (uncorrectable_cnt == 0);
 }
