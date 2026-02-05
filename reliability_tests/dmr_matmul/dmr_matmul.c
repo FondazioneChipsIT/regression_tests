@@ -55,6 +55,11 @@ int main() {
 
   synch_barrier();
 
+  if (get_core_id() == 0){
+    pulp_write32(0x10404008, nbErrors);
+    pulp_write32(0x10404020, 0x1);
+  }
+
   return nbErrors != 0;
 }
 
