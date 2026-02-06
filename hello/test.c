@@ -15,17 +15,10 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include "pulp.h"
 
 int main()
 {
-  printf("HELLO!\n\r");
-
-  if (rt_core_id() == 0) {
-    pulp_write32(0x10404008, 0);
-    pulp_write32(0x10404020, 0x1);
-  }
+  printf("Hello !\n");
 
   return 0;
 }

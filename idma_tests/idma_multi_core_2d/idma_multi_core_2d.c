@@ -91,19 +91,7 @@ int test_idma_2D (int core_id, transfer_2d transfer, int ext2loc, int loc2loc) {
 
         }
     }
-
-    if(core_id == 0) {
-        if(error == 0){
-        printf("TEST PASSED!\n");
-        } else {
-        printf("TEST FAILED!\n");
-        }
-
-        printf("Writing to mailbox...\n");
-        pulp_write32(0x10404008, error);
-        pulp_write32(0x10404020, 0x1);
-    }
-
+    
     return error;
 }
 

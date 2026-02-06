@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "pulp.h"
 
-#define SHARED_ADDR 0xB0000000
 #define SIZE 1024
 
 #define L2_BASE 0x1C001000
@@ -86,20 +85,7 @@ int main() {
     pi_l2_free(l2_addr, SIZE);
   }
 
-  if (rt_core_id() == 0) {
-
-    if(error == 0){
-      printf("TEST PASSED!\n");
-    } else {
-      printf("TEST FAILED!\n");
-    }
-
-    printf("Writing to mailbox...\n");
-    pulp_write32(0x10404008, error);
-    pulp_write32(0x10404020, 0x1);
-  }
-
   synch_barrier();
 
-  return 0;
+  return error;
 }
