@@ -102,18 +102,6 @@ int test_idma_3D (int core_id, TransferParameters transfer, int ext2loc, int loc
         dst_offset_3d += (num_reps-1) * dst_stride_2d + dst_stride_3d;
     }
 
-    if(core_id == 0) {
-        if(error == 0){
-        printf("TEST PASSED!\n");
-        } else {
-        printf("TEST FAILED!\n");
-        }
-
-        printf("Writing to mailbox...\n");
-        pulp_write32(0x10404008, error);
-        pulp_write32(0x10404020, 0x1);
-    }
-
     return error;
 }
 
@@ -252,11 +240,6 @@ int cluster_task () {
 
 int main () {
     int retval = 1;
-
-    if (rt_core_id() == 0) {
-        printf("TEST IDMA MULTI CORE 3D - start!\n");
-    }
-
     #ifdef ARCHI_HAS_FC
     PRINTF ("Fabric Controller calling cluster task \n");
     if (rt_cluster_id() != 0)

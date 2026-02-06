@@ -49,7 +49,7 @@ static int check_output() {
     return (checksum != 0x00007330);
 }
 
-int out_errors, errors = 0;
+int errors = 0;
 #ifndef NO_ECC
 unsigned int intc_data_correctable_cnt = 0;
 unsigned int intc_meta_correctable_cnt = 0;
@@ -66,11 +66,11 @@ int main() {
 
     // execute NNX layer
     execute_nnx_layer(NULL);
-
-    out_errors = check_output();
-
+  
+    errors = check_output();
+  
     *(int *) 0x1A1040A0 = errors;
-    if(out_errors)
+    if(errors)
       printf ("[KO] Terminated test with errors!!!\n");
     else
       printf ("[OK] Terminated test with no errors!!!\n");
@@ -94,27 +94,12 @@ int main() {
         intc_data_correctable_cnt, intc_data_uncorrectable_cnt);
       printf("Meta errors corrected inside intc: %d. Meta errors uncorrectable inside intc: %d\n",
         intc_meta_correctable_cnt, intc_meta_uncorrectable_cnt);
-    #endif
-
-    #ifndef NO_ECC
-      errors = (out_errors != 0) && (intc_data_uncorrectable_cnt == 0 && intc_meta_uncorrectable_cnt == 0 && (ecc_errs[1]==0 && ecc_errs[3]==0));
-    #else
-      errors = out_errors;
-    #endif
-
-    if(errors == 0){
-      printf("TEST PASSED!\n");
-    } else {
-      printf("TEST FAILED!\n");
-    }
-
-    printf("Writing to mailbox...\n");
-    pulp_write32(0x10404008, errors);
-    pulp_write32(0x10404020, 0x1);
+      #endif
   }
-
   synch_barrier();
-
-  return 0;
-
+  #ifndef NO_ECC
+    return (errors != 0) && (intc_data_uncorrectable_cnt == 0 && intc_meta_uncorrectable_cnt == 0 && (ecc_errs[1]==0 && ecc_errs[3]==0));
+  #else
+    return errors;
+  #endif
 }

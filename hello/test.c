@@ -22,10 +22,5 @@ int main()
 {
   printf("HELLO!\n\r");
 
-  if (rt_core_id() == 0) {
-    pulp_write32(0x10404008, 0);
-    pulp_write32(0x10404020, 0x1);
-  }
-
   return 0;
 }

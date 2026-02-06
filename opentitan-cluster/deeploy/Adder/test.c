@@ -63,11 +63,5 @@ int main() {
     }
 
     synch_barrier();
-
-    printf("Writing to mailbox...\n");
-    pulp_write32(0x10404008, (tot_err));
-    pulp_write32(0x10404020, 0x1);
-
-    synch_barrier();
-    return 0;
+    return tot_err;
 }
