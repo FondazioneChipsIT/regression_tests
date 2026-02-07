@@ -27,12 +27,12 @@ int main() {
 
   if(core_id() == 0){
     printf("Writing to mailbox...\n");
-    pulp_write32(MAILBOXES_REG0_OFFSET, 0xBAADC0DE);
-    pulp_write32(MAILBOXES_REG1_OFFSET, 0xBAADC0DE);
-    pulp_write32(MAILBOXES_REG2_OFFSET, 0xBAADC0DE);
-    pulp_write32(MAILBOXES_REG3_OFFSET, 0xBAADC0DE);
-    pulp_write32(MAILBOXES_REG4_OFFSET, 0xBAADC0DE);
-    pulp_write32(MAILBOXES_REG5_OFFSET, 0x1); //ring doorbell
+    hal_write_to_mailbox(MAILBOXES_REG0_OFFSET, 0xBAADC0DE);
+    hal_write_to_mailbox(MAILBOXES_REG1_OFFSET, 0xBAADC0DE);
+    hal_write_to_mailbox(MAILBOXES_REG2_OFFSET, 0xBAADC0DE);
+    hal_write_to_mailbox(MAILBOXES_REG3_OFFSET, 0xBAADC0DE);
+    hal_write_to_mailbox(MAILBOXES_REG4_OFFSET, 0xBAADC0DE);
+    hal_mailboxes_ring_doorbell(); //ring doorbell
   }
 
   return 0;
