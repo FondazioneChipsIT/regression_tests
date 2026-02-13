@@ -33,21 +33,13 @@
 #include "ecc_check.h"
 #endif
 
-#define OUTPUT_SIZE 512
+#include "output.h"
 
 extern uint8_t output[];
 
 #ifndef NO_ECC
 uint32_t ecc_errs[ECC_REGS];
 #endif
-
-static int check_output() {
-    uint32_t checksum = 0;
-    for (int i = 0; i < OUTPUT_SIZE; i++) {
-        checksum += output[i];
-    }
-    return (checksum != 0x00007330);
-}
 
 int errors = 0;
 #ifndef NO_ECC
@@ -63,6 +55,8 @@ int main() {
   unsigned int cluster_id = rt_cluster_id();
 
   if (core_id == 0) {
+
+    layer_info();
 
     // execute NNX layer
     execute_nnx_layer(NULL);
