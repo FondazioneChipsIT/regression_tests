@@ -27,11 +27,16 @@ int main() {
 
   if(core_id() == 0){
     printf("Writing to mailbox...\n");
-    hal_write_to_mailbox(MAILBOXES_REG0_OFFSET, 0xBAADC0DE);
-    hal_write_to_mailbox(MAILBOXES_REG1_OFFSET, 0xBAADC0DE);
-    hal_write_to_mailbox(MAILBOXES_REG2_OFFSET, 0xBAADC0DE);
-    hal_write_to_mailbox(MAILBOXES_REG3_OFFSET, 0xBAADC0DE);
-    hal_write_to_mailbox(MAILBOXES_REG4_OFFSET, 0xBAADC0DE);
+#ifdef NO_STANDALONE
+    hal_write_to_mailbox(ARCHI_MAILBOX_LETTER0_OFFSET, 0xBAADC0DE);
+    hal_write_to_mailbox(ARCHI_MAILBOX_LETTER1_OFFSET, 0xBAADC0DE);
+#else
+    hal_write_to_mailbox(ARCHI_MAILBOXES_REG0_OFFSET, 0xBAADC0DE);
+    hal_write_to_mailbox(ARCHI_MAILBOXES_REG1_OFFSET, 0xBAADC0DE);
+    hal_write_to_mailbox(ARCHI_MAILBOXES_REG2_OFFSET, 0xBAADC0DE);
+    hal_write_to_mailbox(ARCHI_MAILBOXES_REG3_OFFSET, 0xBAADC0DE);
+    hal_write_to_mailbox(ARCHI_MAILBOXES_REG4_OFFSET, 0xBAADC0DE);
+#endif
     hal_mailboxes_ring_doorbell(); //ring doorbell
   }
 
