@@ -23,7 +23,7 @@
 #include "pulp.h"
 
 #include "neureka.h"
-#include "neureka_pulp_cluster_bsp.h"
+#include "neureka_scarv_bsp.h"
 #include "neureka_task.h"
 #include "pulp_nnx_neureka.h"
 
@@ -35,7 +35,7 @@ typedef neureka_quant_function_e nnx_quant_function_e;
 typedef neureka_norm_t nnx_norm_t;
 typedef neureka_task_t nnx_task_t;
 typedef neureka_dev_t nnx_dev_t;
-typedef neureka_pulp_cluster_conf_t nnx_bsp_conf_t;
+typedef neureka_scarv_conf_t nnx_bsp_conf_t;
 typedef neureka_task_flag_e nnx_task_flag_e;
 
 #define nnxTaskFlagTrue neurekaTaskFlagTrue
@@ -52,7 +52,7 @@ typedef neureka_task_flag_e nnx_task_flag_e;
 #define nnx_task_set_ptrs_conv neureka_task_set_ptrs_conv
 #define nnx_task_set_ptrs_norm_quant neureka_task_set_ptrs_norm_quant
 
-#define nnx_bsp_get_dev neureka_pulp_cluster_get_dev
+#define nnx_bsp_get_dev neureka_scarv_get_dev
 
 #define nnx_init neureka_nnx_init
 #define nnx_dispatch_wait neureka_nnx_dispatch_wait
@@ -62,15 +62,11 @@ typedef neureka_task_flag_e nnx_task_flag_e;
 #define nnx_term neureka_nnx_term
 
 // Generated headers
-#include "layer_conf.h"
-#if HAS_BIAS != 0
-  #include "bias.h"
-#endif
+#include "bias.h"
 #include "input.h"
+#include "layer_conf.h"
 #include "output.h"
-#if HAS_NORM_QUANT != 0
-  #include "scale.h"
-#endif
+#include "scale.h"
 #include "weight.h"
 
 static void task_prepare(nnx_task_t *task) {

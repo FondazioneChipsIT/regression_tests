@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * Mantainer: Luca Valente, luca.valente2@unibo.it
  */
 
@@ -79,7 +79,7 @@ void check_matrix_mul(testresult_t *result, void (*start)(), void (*stop)()) {
   for(i = lb; i < ub; i++) {
     for(j = 0; j < SIZE; j++) {
       g_mC[i][j] = 0;
-  
+
       for(k = 0; k < SIZE; k++) {
         g_mC[i][j] += g_mA[i][k] * g_mB[k][j];
       }

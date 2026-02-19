@@ -127,8 +127,6 @@ void allocate_mem_to_cores () {
 
     // Pre-allocate TOT_SIZE = 8 * CORE_SPACE: then we split this window to assign
     // each core its available space for iDMA transfers
-    // pi_l1_malloc starts allocating from 0x10004008 in L1
-    // pi_l2_malloc starts allocating from 0x1c000a60 in L2
 
     if (core_id == 0) {
         l1_addr[0]     = (uint32_t) pi_l1_malloc(0, TOT_SIZE);

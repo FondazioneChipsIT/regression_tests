@@ -73,7 +73,7 @@ int test_idma_2D (int core_id, transfer_2d transfer, int ext2loc, int loc2loc) {
 
 
     // Check the results
-    
+
     for (unsigned int rep = 0; rep < num_reps; rep++) {
         unsigned int src_offset = rep * src_stride;
         unsigned int dst_offset = rep * dst_stride;
@@ -84,7 +84,7 @@ int test_idma_2D (int core_id, transfer_2d transfer, int ext2loc, int loc2loc) {
             if (expected != actual) {
                 error++;
                 if (core_id == 0) {
-                    PRINTF ("ERROR: expected[%d] @%8x = %8x vs actual[%d] @%8x = %8x \n", src_offset + i, &src_ptr[src_offset + i], 
+                    PRINTF ("ERROR: expected[%d] @%8x = %8x vs actual[%d] @%8x = %8x \n", src_offset + i, &src_ptr[src_offset + i],
                             expected, dst_offset+i, &dst_ptr[dst_offset + i], actual);
                 }
             }
@@ -100,8 +100,6 @@ void allocate_mem_to_cores () {
 
     // Pre-allocate TOT_SIZE = 8 * CORE_SPACE: then we split this window to assign
     // each core its available space for iDMA transfers
-    // pi_l1_malloc starts allocating from 0x10004008 in L1
-    // pi_l2_malloc starts allocating from 0x1c000a60 in L2
 
     if (core_id == 0) {
         l1_addr[0]     = (uint32_t) pi_l1_malloc(0, TOT_SIZE);
@@ -232,6 +230,11 @@ int cluster_task () {
 
 int main () {
     int retval = 1;
+
+    if (rt_core_id() == 0) {
+        printf("TEST IDMA MULTI CORE 2D - start!\n");
+    }
+
     #ifdef ARCHI_HAS_FC
     PRINTF ("Fabric Controller calling cluster task \n");
     if (rt_cluster_id() != 0)

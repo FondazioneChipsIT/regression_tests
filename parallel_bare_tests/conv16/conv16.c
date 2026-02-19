@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * Mantainer: Luca Valente, luca.valente2@unibo.it
  */
 /******************************************************************************
@@ -44,7 +44,7 @@ int main() {
 
    if (rt_cluster_id() != 0)
     return bench_cluster_forward(0);
- 
+
    int errors = 0;
    int sum = 0;
 
@@ -112,7 +112,7 @@ int test_singlethread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, in
       #ifndef PULP_SPI
       printf("%s, errors=%d, time=%d\n", str, errors, get_time(rt_cluster_id()));
       #endif
-      
+
    }
 
    return errors;
@@ -125,7 +125,7 @@ int test_multithread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, int
    if(rt_core_id() == 0) {
       load();
    }
-   
+
    synch_barrier();
 
    if(rt_core_id() == 0) {
@@ -154,7 +154,7 @@ int test_multithread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, int
       #ifndef PULP_SPI
       printf("%s, errors=%d, time=%d\n", str, errors, get_time(rt_cluster_id()));
       #endif
-      
+
    }
 
    return errors;
@@ -625,7 +625,7 @@ void conv16_unrolled_ptr_5x5_four_coarse(int16_t *__restrict__ W, int16_t *__res
    int16_t *y_ptr = y + a*oh*ow;
    int16_t *x_base = x + b*h*w + (fh-1)*w + (fw-1);
    int16_t *W_base = &W[((a*nif)+b)*fh*fw];
-   
+
    // synch_barrier();
 
    for (i=0; i<oh; i++) {
