@@ -5,7 +5,7 @@
 #define SHARED_ADDR ARCHI_CLUSTER_ADDR
 #define SIZE 1024
 
-#define L2_BASE 0x1C001000
+#define L2_BASE ARCHI_L2_SHARED_ADDR
 
 int main() {
 
