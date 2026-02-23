@@ -37,7 +37,6 @@ int main() {
     hal_write_to_mailbox(ARCHI_MAILBOXES_REG3_OFFSET, 0xBAADC0DE);
     hal_write_to_mailbox(ARCHI_MAILBOXES_REG4_OFFSET, 0xBAADC0DE);
 #endif
-    hal_mailboxes_ring_doorbell(); //ring doorbell
   }
 
   return 0;
