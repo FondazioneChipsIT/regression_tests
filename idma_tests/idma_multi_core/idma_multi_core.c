@@ -33,7 +33,9 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc) {
         src_ptr[i] = (uint8_t)(i & 0xFF);
         dst_ptr[i] = (uint8_t)((i-1)&0xFF);
     }
-
+#ifndef MULTI_CORE_P
+    plp_idma_enable_clk();
+#endif
     if (loc2loc == 1) {
         reset_cycle_count();
         start_cycle_count();
@@ -50,6 +52,9 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc) {
         plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
         stop_cycle_count();
     }
+#ifndef MULTI_CORE_P
+    plp_idma_disable_clk();
+#endif
     print_perf();
 
     // Check the results
@@ -60,9 +65,7 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc) {
 
         if (expected != actual) {
             error++;
-            if (core_id == 0) {
-                PRINTF ("Error: expected @%8x = %8x vs actual @%8x = %8x \n", expected, &src_ptr[i], actual, &dst_ptr[i]);
-            }
+            PRINTF ("Core[%d]: Error: expected @%8x = %8x vs actual @%8x = %8x \n", rt_core_id(), expected, &src_ptr[i], actual, &dst_ptr[i]);
         }
     }
 
@@ -128,6 +131,10 @@ int cluster_task () {
         if (core_id == 0) {
             PRINTF ("MULTI CORE PARALLEL MODE \n");
         }
+        if (core_id==0) {
+                plp_idma_enable_clk();
+        }
+        synch_barrier();
         for (int k = 0; k < NB_TRANSFERS; k++) {
             #ifdef QUICK_MODE
             size = idma_presets[k].size_1d;
@@ -135,22 +142,19 @@ int cluster_task () {
             size = params_1d[k].size_1d;
             #endif
             // L1 -> L2
-            if (core_id == 0){
-                PRINTF ("L1 -> L2 => Size: %d \n", size);
-            }
+            PRINTF ("L1 -> L2 => Size: %d | Core: %d \n", size, rt_core_id());
             errors[core_id] += test_idma_1D(core_id, size, 0, 0);
             // L2 -> L1
-            if (core_id == 0){
-                PRINTF ("L2 -> L1=> Size: %d \n", size);
-            }
+            PRINTF ("L2 -> L1 => Size: %d | Core: %d \n", size, rt_core_id());
             errors[core_id] += test_idma_1D(core_id, size, 1, 0);
             // L1 -> L1
-            if (core_id == 0){
-                PRINTF ("L1 -> L1 => Size: %d \n", size);
-            }
+            PRINTF ("L1 -> L1 => Size: %d | Core: %d \n", size, rt_core_id());
             errors[core_id] += test_idma_1D(core_id, size, 0, 1);
         }
         synch_barrier();
+        if (core_id==0) {
+            plp_idma_disable_clk();
+        }
     #elif MULTI_CORE_S
         // MULTI CORE SERIAL MODE: each core uses the iDMA in a serial manner
         if (core_id == 0) {
@@ -165,18 +169,16 @@ int cluster_task () {
                     size = params_1d[k].size_1d;
                     #endif
                     // L1 -> L2
-                    if (core_id == 0){
-                        PRINTF ("L1 -> L2 => Size: %d \n", size);
-                    }
+                    PRINTF ("Core[%d]: L1 -> L2 => Size: %d \n", rt_core_id(), size);
                     errors[core_id] += test_idma_1D(core_id, size, 0, 0);
                     // L2 -> L1
                     if (core_id == 0){
-                        PRINTF ("L2 -> L1=> Size: %d \n", size);
+                        PRINTF ("Core[%d]: L2 -> L1=> Size: %d \n", rt_core_id(), size);
                     }
                     errors[core_id] += test_idma_1D(core_id, size, 1, 0);
                     // L1 -> L1
                     if (core_id == 0){
-                        PRINTF ("L1 -> L1 => Size: %d \n", size);
+                        PRINTF ("Core[%d]: L1 -> L1 => Size: %d \n", rt_core_id(), size);
                     }
                     errors[core_id] += test_idma_1D(core_id, size, 0, 1);
                 }
