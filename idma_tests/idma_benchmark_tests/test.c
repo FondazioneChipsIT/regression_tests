@@ -21,6 +21,7 @@ int test_idma_rx (int core_id, int size) {
         dst_ptr[i] = (uint8_t)((i-1)&0xFF);
     }
 
+    plp_idma_enable_clk();
     reset_cycle_count();
     start_cycle_count();
     for (int i=0; i<TRANSFERS_QUEUE; i++) {
@@ -28,6 +29,7 @@ int test_idma_rx (int core_id, int size) {
     }
     plp_cl_dma_barrier_toL1();
     stop_cycle_count();
+    plp_idma_disable_clk();
 
     // Check the results
 
@@ -65,7 +67,7 @@ int test_idma_tx (int core_id, int size) {
         src_ptr[i] = (uint8_t)(i & 0xFF);
         dst_ptr[i] = (uint8_t)((i-1)&0xFF);
     }
-
+    plp_idma_enable_clk();
     reset_cycle_count();
     start_cycle_count();
     for (int i=0; i<TRANSFERS_QUEUE; i++) {
@@ -73,7 +75,7 @@ int test_idma_tx (int core_id, int size) {
     }
     plp_cl_dma_barrier_toL2();
     stop_cycle_count();
-
+    plp_idma_disable_clk();
     // Check the results
 
     #ifdef DISABLE_ERROR_CHECK
@@ -117,7 +119,7 @@ int test_idma_tx_rx (int core_id, int size) {
         src_ptr_rx[i] = (uint8_t)(i & 0xFF);
         dst_ptr_rx[i] = (uint8_t)((i-1)&0xFF);
     }
-
+    plp_idma_enable_clk();
     for (int i=0; i<TRANSFERS_QUEUE; i++) {
         pulp_cl_idma_L1ToL2((unsigned int) src_ptr_tx, (unsigned int) dst_ptr_tx, size);
         pulp_cl_idma_L2ToL1((unsigned int) src_ptr_rx, (unsigned int) dst_ptr_rx, size);
@@ -125,7 +127,7 @@ int test_idma_tx_rx (int core_id, int size) {
 
     plp_cl_dma_barrier_toL1();
     plp_cl_dma_barrier_toL2();
-
+    plp_idma_disable_clk();
     // Check the results
 
     #ifdef DISABLE_ERROR_CHECK

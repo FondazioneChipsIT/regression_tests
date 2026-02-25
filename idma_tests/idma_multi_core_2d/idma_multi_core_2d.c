@@ -9,14 +9,6 @@ uint32_t l1_addr[8] = {0};
 uint32_t l1_dst_addr[8] = {0};
 uint32_t l2_addr[8] = {0};
 
-void print_transfer (transfer_2d transfer) {
-    if (rt_core_id() == 0) {
-        PRINTF ("Transfer Parameters: \n");
-        PRINTF ("Size: %d | Length: %d \n", transfer.size_2d, transfer.length);
-        PRINTF ("Src_stride_2d: %d | Dst_stride_2d: %d \n", transfer.src_stride_2d, transfer.dst_stride_2d);
-    }
-}
-
 int test_idma_2D (int core_id, transfer_2d transfer, int ext2loc, int loc2loc) {
     volatile uint8_t *src_ptr, *dst_ptr;
 
@@ -52,7 +44,9 @@ int test_idma_2D (int core_id, transfer_2d transfer, int ext2loc, int loc2loc) {
             dst_ptr[i+dst_offset_2d] = (uint8_t)((i-1) & 0xFF);
         }
     }
-
+#ifndef MULTI_CORE_P
+    plp_idma_enable_clk();
+#endif
     if (loc2loc == 1) {
         reset_cycle_count();
         start_cycle_count();
@@ -69,11 +63,14 @@ int test_idma_2D (int core_id, transfer_2d transfer, int ext2loc, int loc2loc) {
         plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2_2d((unsigned int)src_ptr, (unsigned int)dst_ptr, length, src_stride, dst_stride, num_reps));
         stop_cycle_count();
     }
+#ifndef MULTI_CORE_P
+    plp_idma_disable_clk();
+#endif
     print_perf();
 
 
     // Check the results
-
+    
     for (unsigned int rep = 0; rep < num_reps; rep++) {
         unsigned int src_offset = rep * src_stride;
         unsigned int dst_offset = rep * dst_stride;
@@ -83,10 +80,8 @@ int test_idma_2D (int core_id, transfer_2d transfer, int ext2loc, int loc2loc) {
 
             if (expected != actual) {
                 error++;
-                if (core_id == 0) {
-                    PRINTF ("ERROR: expected[%d] @%8x = %8x vs actual[%d] @%8x = %8x \n", src_offset + i, &src_ptr[src_offset + i],
-                            expected, dst_offset+i, &dst_ptr[dst_offset + i], actual);
-                }
+                PRINTF ("Core[%d]: ERROR: expected[%d] @%8x = %8x vs actual[%d] @%8x = %8x \n", rt_core_id(), src_offset + i, &src_ptr[src_offset + i],
+                expected, dst_offset+i, &dst_ptr[dst_offset + i], actual);
             }
 
         }
@@ -100,6 +95,8 @@ void allocate_mem_to_cores () {
 
     // Pre-allocate TOT_SIZE = 8 * CORE_SPACE: then we split this window to assign
     // each core its available space for iDMA transfers
+    // pi_l1_malloc starts allocating from 0x10004008 in L1
+    // pi_l2_malloc starts allocating from 0x1c000a60 in L2
 
     if (core_id == 0) {
         l1_addr[0]     = (uint32_t) pi_l1_malloc(0, TOT_SIZE);
@@ -154,21 +151,30 @@ int cluster_task () {
         if (core_id == 0) {
             PRINTF ("MULTI CORE PARALLEL MODE \n");
         }
+        if (core_id==0) {
+            plp_idma_enable_clk();
+        }
+        synch_barrier();
         for (int k = 0; k < TRANSFERS; k++) {
             #ifdef QUICK_MODE
             transfer = idma_presets[k];
             #else
             transfer = params_2d[k];
             #endif
-            print_transfer(transfer);
             // L1 -> L2
+            PRINTF ("Core[%d]: L1 -> L2 Transfer Parameters: Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d \n", rt_core_id(), transfer.size_2d, transfer.length, transfer.src_stride_2d, transfer.dst_stride_2d);
             errors[core_id] += test_idma_2D(core_id, transfer, 0, 0);
             // L2 -> L1
+            PRINTF ("Core[%d]: L2 -> L1 Transfer Parameters: Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d \n", rt_core_id(), transfer.size_2d, transfer.length, transfer.src_stride_2d, transfer.dst_stride_2d);
             errors[core_id] += test_idma_2D(core_id, transfer, 1, 0);
             // L1 -> L1
+            PRINTF ("Core[%d]: L1 -> L1 Transfer Parameters: Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d \n", rt_core_id(), transfer.size_2d, transfer.length, transfer.src_stride_2d, transfer.dst_stride_2d);
             errors[core_id] += test_idma_2D(core_id, transfer, 0, 1);
         }
         synch_barrier();
+        if (core_id==0) {
+            plp_idma_disable_clk();
+        }
     #elif MULTI_CORE_S
         // MULTI CORE SERIAL MODE: each core uses the iDMA in a serial manner
         if (core_id == 0) {
@@ -182,12 +188,14 @@ int cluster_task () {
                     #else
                     transfer = params_2d[k];
                     #endif
-                    print_transfer(transfer);
                     // L1 -> L2
+                    PRINTF ("Core[%d]: L1 -> L2 Transfer Parameters: Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d \n", rt_core_id(), transfer.size_2d, transfer.length, transfer.src_stride_2d, transfer.dst_stride_2d);
                     errors[core_id] += test_idma_2D(core_id, transfer, 0, 0);
                     // L2 -> L1
+                    PRINTF ("Core[%d]: L2 -> L1 Transfer Parameters: Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d \n", rt_core_id(), transfer.size_2d, transfer.length, transfer.src_stride_2d, transfer.dst_stride_2d);
                     errors[core_id] += test_idma_2D(core_id, transfer, 1, 0);
                     // L1 -> L1
+                    PRINTF ("Core[%d]: L1 -> L1 Transfer Parameters: Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d \n", rt_core_id(), transfer.size_2d, transfer.length, transfer.src_stride_2d, transfer.dst_stride_2d);
                     errors[core_id] += test_idma_2D(core_id, transfer, 0, 1);
                 }
             }
@@ -203,12 +211,14 @@ int cluster_task () {
                 #else
                 transfer = params_2d[k];
                 #endif
-                print_transfer(transfer);
                 // L1 -> L2
+                PRINTF ("Core[%d]: L1 -> L2 Transfer Parameters: Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d \n", rt_core_id(), transfer.size_2d, transfer.length, transfer.src_stride_2d, transfer.dst_stride_2d);
                 errors[core_id] += test_idma_2D(core_id, transfer, 0, 0);
                 // L2 -> L1
+                PRINTF ("Core[%d]: L2 -> L1 Transfer Parameters: Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d \n", rt_core_id(), transfer.size_2d, transfer.length, transfer.src_stride_2d, transfer.dst_stride_2d);
                 errors[core_id] += test_idma_2D(core_id, transfer, 1, 0);
                 // L1 -> L1
+                PRINTF ("Core[%d]: L1 -> L1 Transfer Parameters: Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d \n", rt_core_id(), transfer.size_2d, transfer.length, transfer.src_stride_2d, transfer.dst_stride_2d);
                 errors[core_id] += test_idma_2D(core_id, transfer, 0, 1);
             }
         }
@@ -230,11 +240,6 @@ int cluster_task () {
 
 int main () {
     int retval = 1;
-
-    if (rt_core_id() == 0) {
-        printf("TEST IDMA MULTI CORE 2D - start!\n");
-    }
-
     #ifdef ARCHI_HAS_FC
     PRINTF ("Fabric Controller calling cluster task \n");
     if (rt_cluster_id() != 0)
