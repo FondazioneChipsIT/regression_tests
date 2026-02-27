@@ -4,8 +4,6 @@
 
 #define SIZE 1024
 
-#define L2_BASE 0x1C001000
-
 uint32_t l1_addr[8] = {0};
 uint32_t l2_addr[8] = {0};
 
