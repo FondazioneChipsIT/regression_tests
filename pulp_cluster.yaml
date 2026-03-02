@@ -1,4 +1,7 @@
-pulp_cluster:
+pulp-cluster:
+  hello:
+    path: ./hello
+    command: make clean all run
   parMatrixMul8:
     path: ./parallel_bare_tests/parMatrixMul8
     command: make clean all run
@@ -8,15 +11,9 @@ pulp_cluster:
   parMatrixMul32:
     path: ./parallel_bare_tests/parMatrixMul32
     command: make clean all run
-  FP16:
-    path: ./fpu_tests/matmul/FP16
-    command: make clean all run
-  FP16ALT:
-    path: ./fpu_tests/matmul/FP16ALT
-    command: make clean all run
-  FP32:
-    path: ./fpu_tests/matmul/FP32
-    command: make clean all run
+  # dmr_matmul:
+  #   path: ./astral/dmr_matmul
+  #   command: make clean all run
   redmule:
     path: ./hwpe/redmule
     command: make clean all run
@@ -24,14 +21,5 @@ pulp_cluster:
     path: ./hwpe/neureka
     command: make clean all run
   softex:
-    path: ./hwpe/softex
+    path: ./hwpe/neureka
     command: make clean all run
-  idma_multi_core:
-    path: ./idma_tests/idma_multi_core
-    command: make clean all run QUICK_MODE=1
-  idma_multi_core_2d:
-    path: ./idma_tests/idma_multi_core_2d
-    command: make clean all run QUICK_MODE=1
-  idma_multi_core_3d:
-    path: ./idma_tests/idma_multi_core_3d
-    command: make clean all run QUICK_MODE=1
