@@ -1,0 +1,25 @@
+pulp-cluster:
+  hello:
+    path: ./hello
+    command: make clean all run
+  parMatrixMul8:
+    path: ./parallel_bare_tests/parMatrixMul8
+    command: make clean all run
+  parMatrixMul16:
+    path: ./parallel_bare_tests/parMatrixMul16
+    command: make clean all run
+  parMatrixMul32:
+    path: ./parallel_bare_tests/parMatrixMul32
+    command: make clean all run
+  # dmr_matmul:
+  #   path: ./astral/dmr_matmul
+  #   command: make clean all run
+  redmule:
+    path: ./hwpe/redmule
+    command: make clean all run
+  neureka:
+    path: ./hwpe/neureka
+    command: make clean all run
+  softex:
+    path: ./hwpe/neureka
+    command: make clean all run
