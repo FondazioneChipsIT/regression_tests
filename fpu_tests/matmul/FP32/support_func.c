@@ -1,5 +1,6 @@
 #include "config.h"
 #include "pulp.h"
+/*
 double __extendohfdf2(float16alt value)
 {
   float result;
@@ -13,3 +14,4 @@ double __extendhfdf2(float16 value)
   __asm__ __volatile__ ("fcvt.s.h %0, %1": "=f"(result): "f"(value) :);
   return (double) result;
 }
+*/

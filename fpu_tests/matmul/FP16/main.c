@@ -106,6 +106,8 @@ void main_fn(testresult_t *result, void (*start)(), void (*stop)()){
 
 int main()
 {
+  asm volatile ("li t0, 0x2000");
+  asm volatile ("csrs mstatus, t0");
   #ifdef FABRIC
       main_fn();
   #else

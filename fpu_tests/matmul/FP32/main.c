@@ -15,6 +15,7 @@
 #include "data.h"
 
 #define STACK_SIZE 2048
+#define CHECK
 
 void main_fn(testresult_t *result, void (*start)(), void (*stop)());
 
@@ -106,12 +107,13 @@ void main_fn(testresult_t *result, void (*start)(), void (*stop)()){
 
 int main()
 {
+  asm volatile ("li t0, 0x2000");
+  asm volatile ("csrs mstatus, t0");
   #ifdef FABRIC
       main_fn();
   #else
   if (rt_cluster_id() != 0)
-    return bench_cluster_forward(0);
-
+    return bench_cluster_forward(0); 
   int nbErrors = run_suite(testcases);
 
   synch_barrier();
