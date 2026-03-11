@@ -89,10 +89,10 @@ int test_singlethread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, in
    if(rt_core_id() == 0) {
       load();
 
-      reset_timer(rt_cluster_id());
-      start_timer(rt_cluster_id());
+      bench_timer_reset();
+      bench_timer_start();
       test(g_W, g_x, g_y, IH, IW, FH, FW, OH, OW, 1, 0, 0);
-      stop_timer(rt_cluster_id());
+      bench_timer_stop();
 
       #ifdef CHECK_CHECKSUM
       errors = 0;
@@ -111,6 +111,7 @@ int test_singlethread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, in
 
       #ifndef PULP_SPI
       printf("%s, errors=%d, time=%d\n", str, errors, get_time(rt_cluster_id()));
+      perf_print_all();
       #endif
       
    }
@@ -129,12 +130,12 @@ int test_multithread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, int
    synch_barrier();
 
    if(rt_core_id() == 0) {
-      reset_timer(rt_cluster_id());
-      start_timer(rt_cluster_id());
+      bench_timer_reset();
+      bench_timer_start();
    }
    test(g_W, g_x, g_y, IH, IW, FH, FW, OH, OW, 1, 0, 0);
    if(rt_core_id() == 0) {
-      stop_timer(rt_cluster_id());
+      bench_timer_stop();
 
       #ifdef CHECK_CHECKSUM
       errors = 0;
@@ -153,6 +154,7 @@ int test_multithread(void (*test)(int16_t *, int16_t *, int16_t *, int, int, int
 
       #ifndef PULP_SPI
       printf("%s, errors=%d, time=%d\n", str, errors, get_time(rt_cluster_id()));
+      perf_print_all();
       #endif
       
    }
