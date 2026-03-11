@@ -129,12 +129,13 @@ int main()
     }
   }
 
-  if (id == 0)
+  if (id == 0){
     printf("...Dijkstra application complete! Errors: %d, Time: %d cycles\n",error,time);
 
   // print all performance counters
   perf_print_all();
   print_summary((unsigned int) error);
+  }
 
   return error;
 }
