@@ -12,21 +12,21 @@
 #ifdef FIXED
     #ifdef FP16
         typedef signed short      v2s    __attribute__((vector_size (4)));
-        typedef float16      MA_TYPE;
-        typedef float16      MB_TYPE;
-        typedef float16      OUT_TYPE;
-        typedef float16      MA_VTYPE    __attribute__((vector_size (4)));
-        typedef float16      MB_VTYPE    __attribute__((vector_size (4)));
-        typedef float16     OUT_VTYPE    __attribute__((vector_size (4)));
+        typedef _Float16      MA_TYPE;
+        typedef _Float16      MB_TYPE;
+        typedef _Float16      OUT_TYPE;
+        typedef _Float16      MA_VTYPE    __attribute__((vector_size (4)));
+        typedef _Float16      MB_VTYPE    __attribute__((vector_size (4)));
+        typedef _Float16     OUT_VTYPE    __attribute__((vector_size (4)));
         #undef USE_INTRINSICS
     #elif defined(FP16ALT)
         typedef signed short      v2s    __attribute__((vector_size (4)));
-        typedef float16alt      MA_TYPE;
-        typedef float16alt      MB_TYPE;
-        typedef float16alt      OUT_TYPE;
-        typedef float16alt      MA_VTYPE    __attribute__((vector_size (4)));
-        typedef float16alt      MB_VTYPE    __attribute__((vector_size (4)));
-        typedef float16alt     OUT_VTYPE    __attribute__((vector_size (4)));
+        typedef _Float16alt      MA_TYPE;
+        typedef _Float16alt      MB_TYPE;
+        typedef _Float16alt      OUT_TYPE;
+        typedef _Float16alt      MA_VTYPE    __attribute__((vector_size (4)));
+        typedef _Float16alt      MB_VTYPE    __attribute__((vector_size (4)));
+        typedef _Float16alt     OUT_VTYPE    __attribute__((vector_size (4)));
         #undef USE_INTRINSICS
     #elif defined(FP32)
         typedef float  MA_TYPE;
@@ -39,13 +39,13 @@
         typedef float      MA_TYPE;
     #elif MAFP16
             typedef signed short      v2s    __attribute__((vector_size (4)));
-            typedef float16      MA_TYPE;
-            typedef float16      MA_VTYPE    __attribute__((vector_size (4)));
+            typedef _Float16      MA_TYPE;
+            typedef _Float16      MA_VTYPE    __attribute__((vector_size (4)));
             #undef USE_INTRINSICS
     #elif MAFP16ALT
             typedef signed short      v2s    __attribute__((vector_size (4)));
-            typedef float16alt      MA_TYPE;
-            typedef float16alt     MA_VTYPE    __attribute__((vector_size (4)));
+            typedef _Float16alt      MA_TYPE;
+            typedef _Float16alt     MA_VTYPE    __attribute__((vector_size (4)));
             #undef USE_INTRINSICS
     #endif
         
@@ -53,13 +53,13 @@
             typedef float   MB_TYPE;
     #elif MBFP16
             typedef signed short      v2s    __attribute__((vector_size (4)));
-            typedef float16      MB_TYPE;
-            typedef float16      MB_VTYPE    __attribute__((vector_size (4)));
+            typedef _Float16      MB_TYPE;
+            typedef _Float16      MB_VTYPE    __attribute__((vector_size (4)));
             #undef USE_INTRINSICS
     #elif MBFP16ALT
             typedef signed short      v2s    __attribute__((vector_size (4)));
-            typedef float16alt      MB_TYPE;
-            typedef float16alt     MB_VTYPE    __attribute__((vector_size (4)));
+            typedef _Float16alt      MB_TYPE;
+            typedef _Float16alt     MB_VTYPE    __attribute__((vector_size (4)));
             #undef USE_INTRINSICS
     #endif
         // Define output data types
@@ -67,12 +67,12 @@
             typedef float OUT_TYPE;
     #elif OUTFP16
             typedef signed short      v2s    __attribute__((vector_size (4)));
-            typedef float16      OUT_TYPE;
-            typedef float16      OUT_VTYPE    __attribute__((vector_size (4)));
+            typedef _Float16      OUT_TYPE;
+            typedef _Float16      OUT_VTYPE    __attribute__((vector_size (4)));
     #elif OUTFP16ALT
             typedef signed short      v2s    __attribute__((vector_size (4)));
-            typedef float16alt      OUT_TYPE;
-            typedef float16alt     OUT_VTYPE    __attribute__((vector_size (4)));
+            typedef _Float16alt      OUT_TYPE;
+            typedef _Float16alt     OUT_VTYPE    __attribute__((vector_size (4)));
     #endif
 
 #endif

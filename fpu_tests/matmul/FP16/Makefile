@@ -4,7 +4,6 @@ PULP_APP_FC_SRCS = main.c
 PULP_APP_SRCS = support_func.c matmul.c
 
 PULP_CFLAGS += -O3 -g3 
-PULP_CFLAGS += -mno-memcpy
 
 ifdef cores
 PULP_CFLAGS += -DNUM_CORES=${cores} #-flto -DFABRIC=1
@@ -78,5 +77,7 @@ endif
 ifdef stats
 PULP_CFLAGS += -DSTATS
 endif
+
+
 
 include $(PULP_SDK_HOME)/install/rules/pulp.mk
