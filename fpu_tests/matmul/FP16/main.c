@@ -15,6 +15,7 @@
 #include "data.h"
 
 #define STACK_SIZE 2048
+#define CHECK
 
 void main_fn(testresult_t *result, void (*start)(), void (*stop)());
 

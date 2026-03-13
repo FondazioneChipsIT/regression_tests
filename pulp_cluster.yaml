@@ -21,5 +21,14 @@ pulp-cluster:
     path: ./hwpe/neureka
     command: make clean all run
   softex:
-    path: ./hwpe/neureka
+    path: ./hwpe/softex
+    command: make clean all run
+  fp32:
+    path: ./fpu_tests/matmul/FP32
+    command: make clean all cores=8 platform=rtl fmt_A=FP32 fmt_B=FP32 fmt_OUT=FP32 thr=0.004f check=1 run
+  fp16:
+    path: ./fpu_tests/matmul/FP16
+    command: make clean all cores=8 platform=rtl fmt_A=FP16 fmt_B=FP16 fmt_OUT=FP16 thr=0.004f check=1 vect=1 run
+  ecc_test:
+    path: ./reliability_tests/ecc_test
     command: make clean all run
