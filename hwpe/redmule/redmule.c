@@ -42,10 +42,10 @@ int main() {
     uint16_t n_size = N_SIZE;
     uint16_t k_size = K_SIZE;
 
-    uint8_t *x_ext = (uint8_t *)x_inp;
-    uint8_t *w_ext = (uint8_t *)w_inp;
-    uint8_t *y_ext = (uint8_t *)y_inp;
-    uint8_t *z_ext = (uint8_t *)z_oup;
+    uint16_t *x_ext = x_inp;
+    uint16_t *w_ext = w_inp;
+    uint16_t *y_ext = y_inp;
+    uint16_t *z_ext = z_oup;
 
     uint8_t volatile *x = (uint8_t volatile *) pi_l1_malloc(0, (2*m_size*n_size));
     uint8_t volatile *w = (uint8_t volatile *) pi_l1_malloc(0, (2*n_size*k_size));
@@ -88,17 +88,7 @@ int main() {
     hwpe_soft_clear();
     asm volatile("": : :"memory");
 
-    // redmule_cfg ((unsigned int) x,
-    //              (unsigned int) w,
-    //              (unsigned int) y,
-    //              m_size, n_size, k_size,
-    //              (uint8_t) GEMM,
-    //              (uint8_t) Float16);
-    redmule_x_add_set ((unsigned int) x);
-    redmule_w_add_set ((unsigned int) w);
-    redmule_y_add_set ((unsigned int) y);
-    redmule_z_add_set ((unsigned int) y);
-    redmule_cfg (m_size, n_size, k_size, gemm_ops);
+    redmule_cfg((unsigned int)x, (unsigned int)w, (unsigned int)y, m_size, n_size, k_size, (uint8_t)gemm_ops, (uint8_t)Float16);
 
     // Start RedMulE operation
     hwpe_trigger_job();

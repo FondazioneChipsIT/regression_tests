@@ -15,4 +15,3 @@ double __extendhfdf2(_Float16 value)
   __asm__ __volatile__ ("fcvt.s.h %0, %1": "=f"(result): "f"(value) :);
   return (double) result;
 }
-*/
