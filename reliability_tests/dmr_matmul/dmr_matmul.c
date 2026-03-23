@@ -42,13 +42,39 @@ int main() {
     return bench_cluster_forward(0);
 
   hmr_self_enable_dmr();
-  hmr_set_dmr_config_all(0    , // Core ID
-                         true , // Rapid recovery enabled
-                         true , // Setback enabled
-                         false); // Synch req
+
+#ifdef DMR_RAPID_RECOVERY
+  printf ("DMR RAPID RECOVERY MODE \n");
+  hmr_set_dmr_config_all(   0    , // Core ID
+                        true , // Rapid recovery enabled
+                        true , // Setback enabled
+                        false, // Synch req
+                        false); // Timing Diversity
+#elif DMR_NO_RAPID_RECOVERY
+  printf ("DMR NO RAPID RECOVERY MODE \n");
+  hmr_set_dmr_config_all(   0    , // Core ID
+                        false , // Rapid recovery enabled
+                        true , // Setback enabled
+                        false, // Synch req
+                        false); // Timing Diversity
+#elif DMR_TIMING_DIVERSITY
+  printf ("DMR TIMING DIVERSITY MODE \n");
+  hmr_set_dmr_config_all(   0    , // Core ID
+                        false , // Rapid recovery enabled
+                        true , // Setback enabled
+                        false, // Synch req
+                        true); // Timing Diversity
+#else
+  printf ("DMR RAPID RECOVERY MODE \n");
+  hmr_set_dmr_config_all(   0    , // Core ID
+                        true , // Rapid recovery enabled
+                        true , // Setback enabled
+                        false, // Synch req
+                        false); // Timing Diversity
+#endif
+
   printf("Available Config: %x\n", hmr_get_available_config(rt_cluster_id()));
   printf("after setup: %x\n", hmr_get_active_cores(rt_cluster_id()));
-
   hmr_setup_barrier(hmr_get_active_cores(0));
 
   int nbErrors = run_suite(testcases);
