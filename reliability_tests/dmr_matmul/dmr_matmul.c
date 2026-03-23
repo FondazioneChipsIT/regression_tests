@@ -42,13 +42,13 @@ int main() {
     return bench_cluster_forward(0);
 
   hmr_self_enable_dmr();
-  hmr_set_dmr_config_all(0    , // Core ID
-                         true , // Rapid recovery enabled
-                         true , // Setback enabled
-                         false); // Synch req
+  hmr_set_dmr_config_all(   0    , // Core ID
+                          true , // Rapid recovery enabled
+                          true , // Setback enabled
+                          false, // Synch req
+                          false); // Timing Diversity
   printf("Available Config: %x\n", hmr_get_available_config(rt_cluster_id()));
   printf("after setup: %x\n", hmr_get_active_cores(rt_cluster_id()));
-
   hmr_setup_barrier(hmr_get_active_cores(0));
 
   int nbErrors = run_suite(testcases);
