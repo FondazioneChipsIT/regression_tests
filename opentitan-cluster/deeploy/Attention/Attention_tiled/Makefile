@@ -10,7 +10,7 @@ PULP_CFLAGS += -I../../../../../pulp-nn-mixed/
 PULP_CFLAGS += -DUSE_RUNTIME
 
 #Linking pulp-nn-mixed library
-PULP_LDFLAGS += -L$(PULPRT_HOME)/../pulp-nn-mixed -lpulp-nn-mixed -Wl,--trace
+PULP_LDFLAGS += -L$(PULPRT_HOME)/../pulp-nn-mixed/build -lpulp-nn-mixed -Wl,--trace
 
 XLEN:=32
 
