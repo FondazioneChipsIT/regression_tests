@@ -2,17 +2,10 @@
 #include <stdlib.h>
 #include "pulp.h"
 
-<<<<<<< HEAD
 #define SHARED_ADDR ARCHI_CLUSTER_ADDR
 #define SIZE 1024
 
 #define L2_BASE ARCHI_L2_SHARED_ADDR
-=======
-#define SHARED_ADDR 0xB0000000
-#define SIZE 1024
-
-#define L2_BASE 0x1C001000
->>>>>>> 07aeab2 (Some test cleanup + add several printf)
 
 int main() {
 
