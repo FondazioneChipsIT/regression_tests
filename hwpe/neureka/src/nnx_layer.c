@@ -77,8 +77,15 @@ static void task_prepare(nnx_task_t *task) {
   nnx_task_set_weight_offset(task, weightOffsetModeLayerWise, WEIGHT_OFFSET);
 
 #ifdef NEUREKA_WEIGHT_SOURCE_WMEM
-  nnx_task_set_weight_source(task, neurekaWeightSourceWmem);
-  nnx_task_set_activation_prefetch(task, activationPrefetchOn);
+  // activate prefetching via Wmem source only for 1x1 layers
+  if(WEIGHT_HEIGHT == 1) {
+    nnx_task_set_weight_source(task, neurekaWeightSourceWmem);
+    nnx_task_set_activation_prefetch(task, activationPrefetchOn);
+  }
+  else {
+    neureka_task_set_weight_source(task, neurekaWeightSourceTcdm);
+    nnx_task_set_activation_prefetch(task, activationPrefetchOff);
+  }
 #else
   neureka_task_set_weight_source(task, neurekaWeightSourceTcdm);
   nnx_task_set_activation_prefetch(task, activationPrefetchOff);
@@ -87,6 +94,9 @@ static void task_prepare(nnx_task_t *task) {
   neureka_task_set_input_signed(task);
 #else
   neureka_task_set_input_unsigned(task);
+#endif
+#if RESILIENCE_MODE == 1
+  neureka_task_set_resilience_mode(task);
 #endif
 
   const uint32_t w_in_stride = INPUT_CHANNEL * INPUT_BITS / 8;
