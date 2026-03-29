@@ -57,6 +57,9 @@ int main() {
   if (core_id == 0) {
 
     layer_info();
+    #if RESILIENCE_MODE == 1
+    printf ("Resilience Mode Activated!\n");
+    #endif
 
     // execute NNX layer
     execute_nnx_layer(NULL);
