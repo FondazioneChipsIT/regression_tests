@@ -238,7 +238,6 @@ int cluster_task () {
                 #else
                 transfer = params_3d[k];
                 #endif
-                print_transfer(transfer);
                 // L1 -> L2
                 PRINTF ("Core[%d]: L1 -> L2 Transfer Parameters: Size: %d | Length: %d | Src_stride_2d: %d | Dst_stride_2d: %d | Src_stride_3d: %d | Dst_stride_3d: %d | Num_reps_3d: %d\n",
                 rt_core_id(), transfer.size_3d, transfer.length, transfer.src_stride_2d, transfer.dst_stride_2d, transfer.src_stride_3d, transfer.dst_stride_3d,transfer.num_reps_3d);
