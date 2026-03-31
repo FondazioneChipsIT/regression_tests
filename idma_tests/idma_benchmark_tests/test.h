@@ -25,8 +25,8 @@ extern "C" {
 #define DMA_CONF_SERIALIZE 0
 
 #define CORE_SPACE 64*1024
-#define TRANSFER_SIZE 64*1024-1
-#define TRANSFERS_QUEUE 8
+#define TRANSFER_SIZE 5*1024
+#define TRANSFERS_QUEUE 1
 
 #if VERBOSE
     #define PRINTF(...) printf(__VA_ARGS__)
