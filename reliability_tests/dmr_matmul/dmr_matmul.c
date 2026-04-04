@@ -43,20 +43,21 @@ int main() {
 
   hmr_self_enable_dmr();
 
-#ifdef DMR_NO_RAPID_RECOVERY
-  printf ("DMR NO RAPID RECOVERY MODE \n");
-  hmr_set_dmr_config_all(   0    , // Core ID
-                        false , // Rapid recovery enabled
-                        true , // Setback enabled
-                        false, // Synch req
-                        false); // Timing Diversity
-#elif DMR_TIMING_DIVERSITY
+#ifdef DMR_TIMING_DIVERSITY
   printf ("DMR TIMING DIVERSITY MODE \n");
   hmr_set_dmr_config_all(   0    , // Core ID
                         false , // Rapid recovery enabled
                         true , // Setback enabled
                         false, // Synch req
                         true); // Timing Diversity
+
+#elif ARCHI_HMR_NO_RAPID_RECOVERY || DMR_NO_RAPID_RECOVERY
+  printf ("DMR NO RAPID RECOVERY MODE \n");
+  hmr_set_dmr_config_all(   0    , // Core ID
+                        false , // Rapid recovery enabled
+                        true , // Setback enabled
+                        false, // Synch req
+                        false); // Timing Diversity
 #else
   printf ("DMR RAPID RECOVERY MODE \n");
   hmr_set_dmr_config_all(   0    , // Core ID
