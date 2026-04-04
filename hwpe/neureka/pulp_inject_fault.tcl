@@ -17,11 +17,11 @@ set log_injections       1
 set seed                 12345
 set print_statistics     1
 
-set inject_start_time  80000000000ps
-set inject_stop_time  150000000000ps
+set inject_start_time  75480ns
+set inject_stop_time  75500ns
 set injection_clock "pulp_cluster_tb/cluster_i/clk_i"
 set injection_clock_trigger 0
-set fault_period 100
+set fault_period 5
 set rand_initial_injection_phase 1
 # max_num set to 0 means until stop_time
 set max_num_fault_inject 0
@@ -42,12 +42,15 @@ set output_netlist []
 set next_state_netlist []
 set assertion_disable_list []
 
-# for {set idx 0} {$idx < 12} {incr idx} {
-#     set inject_signals_netlist [list {*}$inject_signals_netlist {*}[get_all_core_nets $idx]]
-#     set output_netlist [list {*}$output_netlist {*}[get_core_output_nets $idx]]
-# }
+proc fault_injection_test_signals {} {
+  set intc_list [list]
+  lappend intc_list \
+    "pulp_cluster_tb/cluster_i/hwpe_gen/hwpe_subsystem_i/gen_hwpe\[0\]/gen_neureka/i_neureka/i_engine/ft_datapath_gen/redundancy_gen\[0\]/i_double_infeat_buffer/i_even_infeat_buffer/i_infeat_buffer_scm/neureka_infeat_buffer_scm_i/buffer\[0\]" \
+    "pulp_cluster_tb/cluster_i/hwpe_gen/hwpe_subsystem_i/gen_hwpe\[0\]/gen_neureka/i_neureka/i_engine/ft_datapath_gen/redundancy_gen\[0\]/i_double_infeat_buffer/i_even_infeat_buffer/i_infeat_buffer_scm/neureka_infeat_buffer_scm_i/buffer\[1\]"
+  return $intc_list
+}
 
-set inject_register_netlist [list {*}$inject_register_netlist {*}[get_memory_slice {0 16} {0 50}]]
+set inject_register_netlist [list {*}$inject_register_netlist {*}[fault_injection_test_signals]]
 
 source [file join $script_base_path inject_fault.tcl]
 
