@@ -31,11 +31,16 @@
 int main()
 {
 
-  // generate external mbox irq to wake-up Ibex //
-  pulp_write32(ARCHI_SOC_MAILBOXES_ADDR+ARCHI_MAILBOXES_RETURN, 0);
-  pulp_write32(ARCHI_SOC_MAILBOXES_ADDR+ARCHI_MAILBOXES_DOORBELL, 1);
+  unsigned int core_id = get_core_id();
 
-  printf("Hello !\n");
+  if (core_id == 0) {
+    // generate external mbox irq to wake-up Ibex //
+    printf("Writing to ext mbox!\n");
+    pulp_write32(ARCHI_SOC_MAILBOXES_ADDR+ARCHI_MAILBOXES_RETURN, 0);
+    pulp_write32(ARCHI_SOC_MAILBOXES_ADDR+ARCHI_MAILBOXES_DOORBELL, 1);
+  }
 
-  return 0;
+  synch_barrier();
+  // no return needed here as Ibex will close the cluster
+  // return 0;
 }
