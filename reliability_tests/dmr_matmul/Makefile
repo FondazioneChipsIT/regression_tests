@@ -9,10 +9,6 @@ ifeq ($(fault_inject),1)
 	export FAULT_INJECTION_SCRIPT=$(CURDIR)/pulp_inject_fault.tcl
 endif
 
-ifdef DMR_RAPID_RECOVERY
-PULP_CFLAGS += -DDMR_RAPID_RECOVERY
-endif
-
 ifdef DMR_NO_RAPID_RECOVERY
 PULP_CFLAGS += -DDMR_NO_RAPID_RECOVERY
 endif
