@@ -4,7 +4,7 @@ PULP_APP_FC_SRCS = main.c
 PULP_APP_SRCS = support_func.c matmul.c
 
 PULP_CFLAGS += -O3 -g3 
-PULP_CFLAGS += -mno-memcpy
+# PULP_CFLAGS += -mno-memcpy  # RI5CY-only flag, rejected by CORE-V gcc
 
 ifdef cores
 PULP_CFLAGS += -DNUM_CORES=${cores} #-flto -DFABRIC=1
@@ -77,6 +77,11 @@ endif
 # STATISTICS
 ifdef stats
 PULP_CFLAGS += -DSTATS
+endif
+
+# PERF COUNTERS (needs stats=1: the start/stop hooks are only called under STATS)
+ifdef profile
+PULP_CFLAGS += -DPROFILE
 endif
 
 include $(PULP_SDK_HOME)/install/rules/pulp.mk
