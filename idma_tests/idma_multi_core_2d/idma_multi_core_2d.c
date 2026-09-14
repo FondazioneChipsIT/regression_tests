@@ -231,6 +231,10 @@ int cluster_task () {
                 test_status --;
             }
         }
+        if (test_status == 0)
+            printf ("Test success \n");
+        else
+            printf ("Test fail \n");
     }
 
     free_allocated_memory();
