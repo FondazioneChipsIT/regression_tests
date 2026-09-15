@@ -58,6 +58,9 @@ unsigned int intc_meta_uncorrectable_cnt = 0;
 #endif
 
 int main() {
+  if (rt_cluster_id() != 0)
+    return bench_cluster_forward(0);
+
 
   unsigned int core_id = get_core_id();
   unsigned int cluster_id = rt_cluster_id();
