@@ -15,10 +15,16 @@
  */
 
 #include <stdio.h>
+#include "pulp.h"
+__attribute__((noinline))
+static int ext_main(){
+  printf("e:%d\r\n", hal_core_id());
+  return 0; 
+}
 
 int main()
 {
-  printf("Hello !\n");
-
+  ext_main();
+  printf("%d\r\n", hal_core_id());
   return 0;
 }
