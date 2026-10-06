@@ -74,9 +74,9 @@ int main() {
   
     *(int *) 0x1A1040A0 = errors;
     if(errors)
-      printf ("[KO] Terminated test with errors!!!\n");
+      printf ("[KO] TEST FAIL!!!\n");
     else
-      printf ("[OK] Terminated test with no errors!!!\n");
+      printf ("[OK] TEST SUCCESS!!!\n");
 
     #ifndef NO_ECC
       // Check number of detected errors by ECC modules inside interconnect

@@ -91,7 +91,10 @@ int main() {
 
     *(int *) 0x1A1040A0 = errors;
 
-    printf("Test completed with %d errors\n", errors);
+    if(errors)
+      printf ("[KO] TEST FAIL!!!\n");
+    else
+      printf ("[OK] TEST SUCCESS!!!\n");
   }
   synch_barrier();
   return errors;
