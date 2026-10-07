@@ -34,6 +34,9 @@ uint16_t scores_ext [LENGTH] = SCORES;
 uint16_t golden [LENGTH]     = GOLDEN;
 
 int main() {
+  if (rt_cluster_id() != 0)
+    return bench_cluster_forward(0);
+
   volatile int errors = 0;
 
   uint16_t volatile *scores = (uint16_t volatile *) pi_l1_malloc(0, (FMT_WIDTH*LENGTH));
@@ -88,7 +91,10 @@ int main() {
 
     *(int *) 0x1A1040A0 = errors;
 
-    printf("Test completed with %d errors\n", errors);
+    if(errors)
+      printf ("[KO] TEST FAIL!!!\n");
+    else
+      printf ("[OK] TEST SUCCESS!!!\n");
   }
   synch_barrier();
   return errors;

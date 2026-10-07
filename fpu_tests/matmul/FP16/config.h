@@ -1,6 +1,19 @@
 #ifndef _CONFIG_MATMUL_
 #define _CONFIG_MATMUL_
 
+// float16/float16alt are RI5CY-toolchain builtins. CORE-V has _Float16 instead
+// (needs Zhinx or Zfh) and no equivalent for the alternate-half format.
+#ifdef __cv32e40p__
+  #if defined(FP16ALT) || defined(MAFP16ALT) || defined(MBFP16ALT) || defined(OUTFP16ALT)
+    #error "FP16ALT is unsupported on CV32E40P: fcvt.s.ah has no CORE-V encoding. Build with the RI5CY (xgap9) toolchain."
+  #endif
+  #if defined(__riscv_zhinx) || defined(__riscv_zfh)
+    typedef _Float16 float16;
+  #else
+    #error "FP16 needs half-precision: add _zhinx (or _zfh) to -march."
+  #endif
+#endif
+
 #ifdef FABRIC
 #define DATA_LOCATION
 #else

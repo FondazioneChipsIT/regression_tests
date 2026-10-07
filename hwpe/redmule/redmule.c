@@ -27,6 +27,9 @@
 
 int main() {
 
+  if (rt_cluster_id() != 0)
+    return bench_cluster_forward(0);
+
   volatile int errors = 0;
   unsigned int cluster_id = rt_cluster_id();
   #ifndef NO_ECC
@@ -109,7 +112,10 @@ int main() {
 
     *(int *) 0x1A1040A0 = errors;
 
-    printf ("Terminated test with %d errors. See you!\n", errors);
+    if(errors)
+      printf ("[KO] TEST FAIL!!!\n");
+    else
+      printf ("[OK] TEST SUCCESS!!!\n");
 
     #ifndef NO_ECC
       // Check number of detected errors by ECC modules inside interconnect

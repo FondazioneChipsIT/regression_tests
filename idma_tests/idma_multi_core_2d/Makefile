@@ -26,7 +26,7 @@ endif
 PULP_CFLAGS += -O3
 stackSize = 4096
 
-include $(PULP_SDK_HOME)/install/rules/pulp.mk
+include $(PULP_SDK_HOME)/install/rules/pulp_rt.mk
 
 stimuli:
 	python3 ../gen_stimuli.py 2D

@@ -18,6 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// corev-gcc <=v0.4 ICEs (maybe_postinc, expr.cc) expanding the inlined
+// neureka_task_set_* helpers at -O1..-O3 and -Og. -Os avoids it.
+#ifdef __cv32e40p__
+#pragma GCC optimize("Os")
+#endif
+
 #include "nnx_layer.h"
 #include "ecc_check.h"
 #include "pulp.h"

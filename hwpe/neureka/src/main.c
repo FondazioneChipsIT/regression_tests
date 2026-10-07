@@ -58,6 +58,9 @@ unsigned int intc_meta_uncorrectable_cnt = 0;
 #endif
 
 int main() {
+  if (rt_cluster_id() != 0)
+    return bench_cluster_forward(0);
+
 
   unsigned int core_id = get_core_id();
   unsigned int cluster_id = rt_cluster_id();
@@ -71,9 +74,9 @@ int main() {
   
     *(int *) 0x1A1040A0 = errors;
     if(errors)
-      printf ("[KO] Terminated test with errors!!!\n");
+      printf ("[KO] TEST FAIL!!!\n");
     else
-      printf ("[OK] Terminated test with no errors!!!\n");
+      printf ("[OK] TEST SUCCESS!!!\n");
 
     #ifndef NO_ECC
       // Check number of detected errors by ECC modules inside interconnect
