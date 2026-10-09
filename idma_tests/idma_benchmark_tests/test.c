@@ -241,6 +241,12 @@ int cluster_task () {
 
 int main () {
     int retval = 1;
+    #ifdef ARCHI_HAS_FC
+    PRINTF ("Fabric Controller calling cluster task \n");
+    if (rt_cluster_id() != 0)
+        return bench_cluster_forward(0);
+    #endif
     retval = cluster_task();
+
     return retval;
 }

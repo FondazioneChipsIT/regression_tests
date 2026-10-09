@@ -28,11 +28,13 @@ int test_idma_1D (int core_id, uint32_t size, int ext2loc, int loc2loc) {
         src_ptr[i] = (uint8_t)(i & 0xFF);
     }
 
-  if (ext2loc == 1) {
+    plp_idma_enable_clk();
+    if (ext2loc == 1) {
         plp_cl_dma_wait_toL1(pulp_cl_idma_L2ToL1((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
     } else {
         plp_cl_dma_wait_toL2(pulp_cl_idma_L1ToL2((unsigned int) src_ptr, (unsigned int) dst_ptr, size));
     }
+    plp_idma_disable_clk();
 
     // Check the results
 
