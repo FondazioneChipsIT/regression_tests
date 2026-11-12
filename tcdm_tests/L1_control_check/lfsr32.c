@@ -63,7 +63,7 @@ uint32_t lfsr_iter_word(uint32_t lfsr, uint32_t *lfsr_byte_feedback) {
 
 int main() {
   uint32_t cnt = 0;
-  uint32_t cnt2= 8192; // (ADDR_LAST-ADDR_FIRST)/STRIDE
+  uint32_t cnt2= (ADDR_LAST-ADDR_FIRST)/STRIDE;
 
   //WRITE all the memory with stride=128B
     uint32_t lfsr = DEFAULT_SEED;
