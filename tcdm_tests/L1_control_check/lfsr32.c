@@ -25,8 +25,8 @@
 //#define UART
 //#define INFINITE_LOOP
 
-#define ADDR_FIRST 0x10000000
-#define ADDR_LAST  0x1000FFFF //68kB of L1
+#define ADDR_FIRST 0x10008000 // avoiding to overwrite the stack
+#define ADDR_LAST  0x10010000
 #define STRIDE 8
 
 #ifdef USE_BYTE_FEEDBACK
